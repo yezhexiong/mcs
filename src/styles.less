@@ -1,0 +1,52 @@
+@import '~ant-design-vue/dist/antd.less'; // 引入官方提供的 less 样式入口文件
+
+/************************** 
+  覆盖antd主题样式
+**************************/
+@primary-color: #08979c; //全局主题色
+@border-radius-base: 0px; // 组件/浮层圆角
+@menu-collapsed-width: 50px;//menu折叠宽度
+
+/************************** 
+  全局覆盖antd控件样式
+**************************/
+//ant-form 控件每行下面留白取消
+.ant-form-item {
+  margin-bottom:0;
+}
+//a-upload-dragger 拖拽上传控件样式修改
+.ant-upload.ant-upload-drag .ant-upload {
+  padding: 0!important;
+}
+.ant-upload.ant-upload-drag p.ant-upload-drag-icon {
+  display:flex;
+  align-items:center;
+  text-align: center;
+  margin: 0 0 0 20px;
+}
+
+
+//ant-table table样式修改
+// ::-webkit-scrollbar 滚动条整体部分
+// ::-webkit-scrollbar-thumb 滚动条里面的小方块，能上下左右移动（取决于是垂直滚动条还是水平滚动条）
+// ::-webkit-scrollbar-track 滚动条的轨道（里面装有thumb）
+// ::-webkit-scrollbar-button 滚动条轨道两端的按钮，允许通过点击微调小方块的位置
+// ::-webkit-scrollbar-track-piece 内层轨道，滚动条中间部分（除去）
+// ::-webkit-scrollbar-corner 边角，及两个滚动条的交汇处
+// ::-webkit-resizer 两个滚动条的交汇处上用于通过拖动调整元素大小的小控件
+.ant-table-body{
+  &::-webkit-scrollbar {
+    height: 5px;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    background:rgba(144, 147, 153, 0.5);
+  }
+  &::-webkit-scrollbar-track {
+    -webkit-box-shadow: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+}
+
