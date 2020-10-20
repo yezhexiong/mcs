@@ -9,18 +9,25 @@ import router from '@/routers'
 
 axios.defaults.timeout = 5000;
 
-axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? '' : process.env.VUE_APP_API_BASE_URL   //根据自己配置的反向代理去设置不同环境的baeUrl
+axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? 'http://192.168.150.12:1771' : process.env.VUE_APP_API_BASE_URL   //根据自己配置的反向代理去设置不同环境的baeUrl
+// axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL   //根据自己配置的反向代理去设置不同环境的baeUrl
 // 请求拦截
 axios.interceptors.request.use(config => {
   // 1. 这个位置就请求前最后的配置
   // 2. 当然你也可以在这个位置 加入你的后端需要的用户授权信息
-  config.headers['Access-Token'] = globalData.AccessToken; 
 
   // ---- 历史header字段 start ----
-  config.headers['dbuser'] = globalData.LoginUserInfo.dbuser; 
-  config.headers['username'] = globalData.LoginUserInfo.username; 
-  config.headers['userid'] = globalData.LoginUserInfo.userid; 
-  config.headers['hospitalid'] = globalData.LoginUserInfo.hospitalid; 
+
+  //登录时不需要某些headers信息
+  if (!config.url.includes('/UserAdminService/IsUserValid')) {
+    console.log('登录请求')
+    config.headers['Access-Token'] = globalData.AccessToken; 
+    config.headers['dbuser'] = globalData.LoginUserInfo.dbuser; 
+    config.headers['username'] = globalData.LoginUserInfo.username; 
+    config.headers['userid'] = globalData.LoginUserInfo.userid; 
+    config.headers['hospitalid'] = globalData.LoginUserInfo.hospitalid; 
+  }
+  
   // ---- 历史header字段 end ----
 
 //   loadingInstance = Loading.service({       // 发起请求时加载全局loading，请求失败或有响应时会关闭
