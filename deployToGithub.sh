@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
+# 一键将dist代码发布到github pages 脚本
+
 
 # 当发生错误时中止脚本
 set -e
