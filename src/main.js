@@ -1,13 +1,14 @@
 import Vue from 'vue'
 import Antd from 'ant-design-vue';
 import storage from 'store'//浏览器本地存储方法插件
+import jquery from 'jquery';
 
 import App from './App.vue'
 import api from '@/contract/Api'//后端接口地址约定
 import http from '@/utils/Http';//ajax请求封装
 import routers from '@/routers'//路由配置
 import globalData from '@/utils/GlobalData';//全局公用数据
-import globalDict from '@/utils/GlobalDict';//全局公用数据
+import {globalDict} from '@/utils/GlobalDict';//全局公用数据
 import globalFunc from '@/utils/GlobalFunc';//全局公用方法
 import '@/utils/GlobalExtension';//注册相关全局扩展方法(扩展js原生对象)
 
@@ -34,6 +35,8 @@ Vue.prototype.$Http = http;//http 使用方式this.$Http
 Vue.prototype.$GlobalData = globalData
 Vue.prototype.$GlobalDict = globalDict
 Vue.prototype.$GlobalFunc = globalFunc
+Vue.prototype.$Jquery = jquery
+
 
 new Vue({
   router:routers,

@@ -35,9 +35,8 @@ export default {
     get AccessToken(){
         if(this._accessToken === ""){
             this._accessToken = storage.get(ACCESS_TOKEN);
-            console.log("this._userInfo === null")
         }
-        return this._userInfo;
+        return this._accessToken;
     },
     /**
      * 设置范围令牌

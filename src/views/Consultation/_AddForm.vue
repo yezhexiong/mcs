@@ -13,26 +13,10 @@
     >
       <!-- 对话框自定义按钮 -->
       <template slot="footer">
-        <!-- approvalstatus 流程状态 99:所有，10：取消会诊，11：驳回申请，0：退回，1:激活，2：完成，3：终止,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收) -->
-        <span v-if="formModel.approvalstatus==='15' || formModel.approvalstatus==='' ">
-          <a-button key="btnSend" type="primary" :loading="loading" @click="onSend">发送</a-button>
-        </span>
-        <span v-if="formModel.approvalstatus==='11'">
-          <a-button key="btnReSend" type="primary" :loading="loading" @click="onReSend">重新发起</a-button>
-        </span>
-        <span v-if="formModel.approvalstatus==='15' || formModel.approvalstatus==='' ">
-          <a-button key="btnSave" type="primary" :loading="loading" @click="onSave">暂存</a-button>
-        </span> 
-        <span v-if="formModel.approvalstatus==='13'">
-          <a-button key="btnWithdraw" type="primary" :loading="loading" @click="onWithdraw">撤销申请</a-button>
-        </span>
-        <span v-if="formModel.approvalstatus==='15'">
-          <a-button key="btnDelete" type="primary" :loading="loading" @click="onDelete">删除</a-button>
-        </span>
-        <span v-if="formModel.approvalstatus==='15'">
-          <a-button key="btnPrint" @click="onPrint">打印</a-button>
-        </span>
+        <a-button key="btnSend" type="primary" :loading="loading" @click="onSend">发送</a-button>
+        <a-button key="btnSave" type="primary" :loading="loading" @click="onSave">暂存</a-button>
         <a-button key="btnReset" @click="onResetForm">重置</a-button>
+        <a-button key="btnPrint" @click="onPrint">打印</a-button>
         <a-button key="btnClose" @click="handleCancel">取消关闭</a-button>
       </template> 
 
@@ -63,7 +47,6 @@
             </a-radio-button>
           </a-radio-group>
         </a-form-model-item>
-
         <!--  如果一行要求多个列时，采用栅格布局       
         <a-row :gutter="16">
           <a-col :span="12">
@@ -76,7 +59,7 @@
           <a-col :span="12">
             <a-form-model-item label="会诊患者" prop="patientid" :label-col="labelCol2">
               <a-select v-model="formModel.patientid" placeholder="请选择会诊患者">
-                <a-select-option v-for="(item,index)  in dictPatients" :key="index" :value="item.text "  >{{item.text }}</a-select-option> 
+                <a-select-option v-for="(item,index)  in dictPatients" :key="index" :value="item.text" >{{item.text }}</a-select-option> 
               </a-select>
             </a-form-model-item>
           </a-col>
@@ -133,6 +116,7 @@
             </p>
           </a-upload-dragger>
         </a-form-model-item>
+
         <div v-if="formModel.consultationtype==='c'">
           <a-divider orientation="left">肿瘤分期</a-divider>
           <a-row>
@@ -227,13 +211,12 @@
 export default {
   props: {//组件入参数定义,入参数参数不允许修改 定义props参数后调用，父组件传值方式 :title="xxxx" 或 title="xxxx"
     visible:Boolean,//a-modal 是否显示
-    primaryKey:String//主键值
   },
   data() {
     return {//组件私有变量
       //Modal相关变量
       loading: false,
-      title:'修改会诊',
+      title:'创建会诊',
       //FormModel相关变量
       dictPatients:[ 
         { text: 'One', value: 'A' },
@@ -243,7 +226,7 @@ export default {
       labelCol2: { span: 8 },
       wrapperCol: { span: 14 },
       formModel: {
-        "approvalstatus":"-1"
+        default: () => null
       },
       dict_staging_method:this.$GlobalDict.TumorStaging.StagingMethod.GetDict(),
       dict_classification_stages:this.$GlobalDict.TumorStaging.ClassificationStages.GetDict(), 
@@ -263,6 +246,7 @@ export default {
         applydoctor: [{ required: true, message: '请填写申请医生', trigger: 'blur' }],
         phone: [{ required: true, message: '请填写联系电话', trigger: 'blur' }],
         staging_method: [{ required: true, message: '请选择分期方法', trigger: 'blur' }],
+        
       },
       doctors: ['何云松   100236 呼吸内科', 'XXXX专家组', '呼吸内科'],
       selectAssayVisible:false,//检验选择对话框显示
@@ -270,20 +254,7 @@ export default {
   },
   mounted() {//mounted 是生命周期方法之一，会在对应生命周期时执行。
   },
-  watch: {
-    primaryKey(){
-      console.log('watch this.primaryKey =',this.primaryKey)
-      this.loadData()
-    }
-  },
   methods: {
-    loadData(){
-      if(this.primaryKey !== ""){
-        this.$Http.AsyncGet(this.$Api.Consultation.GetApplyInfo+'?id='+this.primaryKey).then(res => {
-            this.formModel = res.data;
-        })
-      }
-    },
     handleCancel () {
       this.$emit('update:visible',false); //父组件里通过.sync的props变量，才能通过次方式进行修改 这里是:visible.sync
     },
@@ -291,19 +262,12 @@ export default {
       this.$refs.editForm.validate(valid => {
         if (valid) {//验证成功
           this.loading = true;
-          this.$Http.AsyncPost(this.$Api.Consultation.AddApply,this.formModel).then(res => {
+          setTimeout(() => {
             this.visible = false;
             this.loading = false;
             this.$message.info('保存成功')
             this.$emit('update:visible',false);
-            console.log(res)
-          });
-          // setTimeout(() => {
-          //   this.visible = false;
-          //   this.loading = false;
-          //   this.$message.info('保存成功')
-          //   this.$emit('update:visible',false);
-          // }, 3000);
+          }, 3000);
         } else {
           console.log('error onSave!!');
           return false;
@@ -354,7 +318,7 @@ export default {
     selectDoctors() {//选择会诊对象
       alert("选择会诊对象")
     },
-
+    
    
 
 
@@ -362,7 +326,5 @@ export default {
 };
 </script>
 <style>
-.ant-modal-footer button {
-    margin-left: 8px;
-}
+
 </style>

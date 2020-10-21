@@ -3,94 +3,152 @@
  ********************************/
 
 import storage from 'store'
+import http from './Http'
+import api from '../contract/Api'//后端接口地址约定
 
-var globalDict = () => {}
 
-globalDict.prototype.Title = "1111";
-globalDict.prototype.PrintTitle=function(param){ 
-    console.log('param=',param)
-    console.log('this.Title=',this.Title)
-};
-
-globalDict.prototype.Consultation = {
-    _approvalStatuss : null,//会诊状态：99:所有，10：取消会诊，0：驳回申请，1：审批中；2：草稿,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收)
-    /**
-     * 格式化会诊状态
-     */
-    FormatApprovalStatus: function(val){
-        if(this._approvalStatuss === null){
-            console.log('this._approvalStatuss 为空，从缓存获取')
-            this._approvalStatuss = storage.get("Consultation_approvalStatusList");
-            if(typeof(this._approvalStatuss) == 'undefined'){
-                console.log('this._approvalStatuss 还为空，执行字典导入方法')
-                this.ImportApprovalStatus()
+/**
+ * 字典表帮助
+ */
+class dictHelper {
+    constructor(dictCategory) {
+        this.dictCategory = dictCategory
+        this.dicts = []
+        this.cachepPrefixKey = "dict_common_"
+        /**
+         * 加载字典表数据
+         */
+        this.LoadDict = function () {
+            const postParams = {
+                "dict_pid": 0,
+                "dict_type": "string",
+                "dict_code": this.dictCategory,
+                "dict_sort": 0,
+                "dict_status": 1
             }
+            this.dicts = http.Post(api.Common.GetWidgetDict, postParams)
+            storage.set(this.cachepPrefixKey + this.dictCategory, this.dicts, 7 * 24 * 60 * 60 * 1000)
         }
-        let listCount = this._approvalStatuss.length
-        for (var i = 0; i < listCount; i++) {
-            let e = this._approvalStatuss[i]
-            if(e.key === val+''){
-                console.log('e.value=',e.value)
-                return e.value;
+        /**
+         * 获取字典
+         */
+        this.GetDict = function () {
+            if (typeof (this.dicts) == 'undefined' || this.dicts.length === 0) {
+                this.dicts = storage.get(this.cachepPrefixKey + this.dictCategory)
             }
+            if (typeof (this.dicts) == 'undefined' || this.dicts.length === 0) {
+                this.LoadDict()
+            }
+            return this.dicts
         }
-    },
-    /**
-     * 导入会诊状态字典
-     */
-    ImportApprovalStatus:function(){
-        let dic = [
-                {"key":"99","value":"所有"},
-                {"key":"10","value":"取消会诊"},
-                {"key":"0","value":"驳回申请"},
-                {"key":"1","value":"审批中"},
-                {"key":"2","value":"草稿"},
-                {"key":"13","value":"申请中"},
-                {"key":"14","value":"审核通过"},
-                {"key":"15","value":"完成会诊"},
-                {"key":"16","value":"会诊中(已接收)"},
-            ];
-        storage.set("Consultation_approvalStatusList", dic, 7 * 24 * 60 * 60 * 1000)
-        this._approvalStatuss=dic;
-    },
+        /**
+         * 格式化会诊状态
+         * @param key 字典key
+         * @returns {string}
+         */
+        this.FormatDict = function (key) {
+            let dict = this.GetDict()
+            if (typeof (dict) == 'undefined' || dict === 0) {
+                for (let index in dict) {
+                    let e = dict[index]
+                    if (e.dict_code === key + '') {
+                        return e.dict_value
+                    }
+                }
+            }
+            return ""
+        }
+        /**
+         * 删除字典表数据
+         * @returns {void}
+         */
+        this.RemoveDict = function () {
+            this.dicts = []
+            storage.remove(this.cachepPrefixKey + this.dictCategory)
+        }
+    }
 }
-export default new globalDict()
-// export default {
-//     //会诊相关
-//     Consultation:{
-//         _approvalStatuss : null,//会诊状态：99:所有，10：取消会诊，0：驳回申请，1：审批中；2：草稿,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收)
-//         /**
-//          * 格式化会诊状态
-//          */
-//         FormatApprovalStatus:(val) =>{
-//             if(this._approvalStatuss === null){
-//                 this._approvalStatuss = storage.get("Consultation_approvalStatusList");
-//                 if(this._approvalStatuss === null){
-//                     this.ImportApprovalStatus()
-//                 }
-//             }
-//             this._approvalStatuss.forEach(e => {
-//                 if(e === val)
-//                 return e.Text;
-//             });
-//         },
-//         /**
-//          * 导入会诊状态字典
-//          */
-//         ImportApprovalStatus:()=>{
-//             let dic = [
-//                     {"key":"99","value":"所有"},
-//                     {"key":"10","value":"取消会诊"},
-//                     {"key":"0","value":"驳回申请"},
-//                     {"key":"1","value":"审批中"},
-//                     {"key":"2","value":"草稿"},
-//                     {"key":"13","value":"申请中"},
-//                     {"key":"14","value":"审核通过"},
-//                     {"key":"15","value":"完成会诊"},
-//                     {"key":"16","value":"会诊中(已接收)"},
-//                 ];
-//             storage.set("Consultation_approvalStatusList", dic, 7 * 24 * 60 * 60 * 1000)
-//             this._approvalStatuss=dic;
-//         },
-//     },
-// }
+
+const globalDict = {
+    /**
+     * 会诊相关字典
+     */
+    Consultation:{
+        ApprovalStatus:{
+            _dictApprovalStatus : [],
+            /**
+             * 获取字典
+             */
+            GetDict(){
+                if (typeof (this._dictApprovalStatus) == 'undefined' || this._dictApprovalStatus.length === 0) {
+                    this.LoadDict()
+                }
+                return this._dictApprovalStatus
+            },
+            /**
+             * 格式化
+             * @param key 字典key
+             * @returns {string}
+             */
+            FormatDict(key){
+                if(this._dictApprovalStatus.length === 0){
+                    this.GetDict()
+                }
+                let dict = this._dictApprovalStatus
+                for (let index in dict) {
+                    let e = dict[index]
+                    if(e.key == key){
+                        return e.value;
+                    }
+                }
+            },
+            /**
+             * 加载字典
+             */
+            LoadDict(){
+                this._dictApprovalStatus = [
+                    {"key":"99","value":"所有"},
+                    {"key":"10","value":"取消会诊"},
+                    {"key":"0","value":"驳回申请"},
+                    {"key":"1","value":"审批中"},
+                    {"key":"2","value":"草稿"},
+                    {"key":"13","value":"申请中"},
+                    {"key":"14","value":"审核通过"},
+                    {"key":"15","value":"完成会诊"},
+                    {"key":"16","value":"会诊中(已接收)"},
+                ]
+            },
+            /**
+             * 删除字典
+             */
+            RemoveDict(){
+                this._dictApprovalStatus = []
+            }
+        },
+    },
+    /** 肿瘤分期 */
+    TumorStaging:{
+        /** 分期方法 */
+        StagingMethod:new dictHelper("Staging_Method"),
+       
+        /** 类别 */
+        ClassificationStages:new dictHelper("Classification_Stages"),
+        
+        /** 原发肿瘤 */
+        PrimaryTumor:new dictHelper("Primary_Tumor"),
+        
+        /** 淋巴结转移 */
+        LymphMetastasis:new dictHelper("Lymph_Metastasis"),
+        
+        /** 远处转移 */
+        DistantMetastasis:new dictHelper("Distant_Metastasis"),
+        
+        /** 分期 */
+        ByStages:new dictHelper("By_Stages"),
+    }, 
+}
+
+export {
+    dictHelper,
+    globalDict
+}

@@ -3,13 +3,16 @@
  ********************************/
 
 import axios from 'axios';
+import jquery from 'jquery';
 import globalData from '@/utils/GlobalData';//全局公用数据
 import { notification } from 'ant-design-vue'
 import router from '@/routers'
 
-axios.defaults.timeout = 5000;
+let timeout = 5000
+let baseUrl = process.env.NODE_ENV === 'production' ? 'http://192.168.150.12:1771' : process.env.VUE_APP_API_BASE_URL   //根据自己配置的反向代理去设置不同环境的baeUrl
 
-axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? 'http://192.168.150.12:1771' : process.env.VUE_APP_API_BASE_URL   //根据自己配置的反向代理去设置不同环境的baeUrl
+axios.defaults.timeout = timeout;
+axios.defaults.baseURL = baseUrl
 // axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL   //根据自己配置的反向代理去设置不同环境的baeUrl
 // 请求拦截
 axios.interceptors.request.use(config => {
@@ -17,16 +20,13 @@ axios.interceptors.request.use(config => {
   // 2. 当然你也可以在这个位置 加入你的后端需要的用户授权信息
 
   // ---- 历史header字段 start ----
-
-  //登录时不需要某些headers信息
-  if (!config.url.includes('/UserAdminService/IsUserValid')) {
-    console.log('登录请求')
-    config.headers['Access-Token'] = globalData.AccessToken; 
-    config.headers['dbuser'] = globalData.LoginUserInfo.dbuser; 
-    config.headers['username'] = globalData.LoginUserInfo.username; 
-    config.headers['userid'] = globalData.LoginUserInfo.userid; 
-    config.headers['hospitalid'] = globalData.LoginUserInfo.hospitalid; 
-  }
+    if(typeof(globalData.LoginUserInfo) !== 'undefined'){
+        config.headers['Access-Token'] = globalData.AccessToken; 
+        config.headers['dbuser'] = globalData.LoginUserInfo.dbuser; 
+        config.headers['username'] = globalData.LoginUserInfo.username; 
+        config.headers['userid'] = globalData.LoginUserInfo.userid; 
+        config.headers['hospitalid'] = globalData.LoginUserInfo.hospitalid; 
+    }
   
   // ---- 历史header字段 end ----
 
@@ -56,20 +56,56 @@ axios.interceptors.response.use(res => {
     // 请求成功
     // 1. 根据自己项目需求定制自己的拦截
     // 2. 然后返回数据
-    if (!res.data.success&&res.data.code!=="200") {
-        console.log('res.data: ', res.data);
-        console.log('res.data.success: ', res.data.success);
-        console.log('res.data.msg: ', res.data.msg);
+    if (!res.data.success && res.data.code!=="200") {
         notification.error({
-            message: '错误信息1',
+            message: '系统提示',
             description: res.data.msg
         })
-
         return Promise.reject(res.data);
     }else{
         return Promise.resolve(res.data);
     }
 },errorHandler)
+
+// jquery ajax 设置默认值
+jquery.ajaxSetup({
+    timeout: timeout,
+    async:false,
+    dataType: 'json',
+    contentType: "application/json;charset=UTF-8",//设置该格式后，data参数必须用 JSON.stringify(params) 进行处理    
+    //请求失败遇到异常触发
+    error: function (xhr,status,error) { errorHandler(error)},
+    //完成请求后触发。即在success或error触发后触发
+    complete: function (xhr, status) { 
+        //通过XMLHttpRequest取得响应结果
+        // var res = JSON.parse(xhr.responseText)
+        // try{
+        //     if (!res.data.success && res.data.code!=="200") {
+        //         notification.error({
+        //             message: '系统提示',
+        //             description: res.data.msg
+        //         })
+        //         return Promise.reject(res.data);
+        //     }
+            
+        // }catch(e){
+            console.log(status)
+        // }
+    },
+    //发送请求前触发
+    beforeSend: function (xhr) {
+        console.log('$.ajaxSetup -> beforeSend1') 
+        if(typeof(globalData.LoginUserInfo) !== 'undefined'){
+            console.log('可以设置自定义标头') 
+            //可以设置自定义标头
+            xhr.setRequestHeader('Access-Token',globalData.AccessToken );
+            xhr.setRequestHeader('dbuser', globalData.LoginUserInfo.dbuser);
+            xhr.setRequestHeader('username', globalData.LoginUserInfo.username);
+            xhr.setRequestHeader('userid', globalData.LoginUserInfo.userid);
+            xhr.setRequestHeader('hospitalid',globalData.LoginUserInfo.hospitalid );
+        }
+    },
+})
 
 // 异常拦截处理器
 const errorHandler = (error) => {
@@ -113,79 +149,128 @@ let httpCode = {        //这里我简单列出一些常见的http状态码信�
     502: '网关错误',
     504: '网关超时'
 }
+
 export default {
     /**
-     * get 请求
-     * @param url 接口路由
-     * @param auth 是否需要带登录信息
-     * @returns {AxiosPromise<any>}
+     * get 同步请求 jquery 方法
+     * @param {*} url 
+     * @param {*} params
      */
-    Get(url, auth = false) {
-        if (auth) {
-            return axios.get(url, {headers: {Authorization: 'Your back-end user authenticates information'}});
-        } else {
-            return axios.get(url);
-        }
+    Get: function (url, params) {
+        console.log('url=',url)
+        let res = null
+        jquery.ajax({
+            url: baseUrl+url,
+            type: "get",
+            data: JSON.stringify(params),
+            success: function (result) {
+                res = result.data
+            }
+        });
+        return res
     },
 
     /**
-     * post 请求
+     * Posst 同步请求 jquery 方法
+     * @param {*} url 
+     * @param {*} params
+     */
+    Post: function (url, params) {
+        console.log('params=',params)
+        let res = null
+        jquery.ajax({
+            url: baseUrl+url,
+            type: "post",
+            data: JSON.stringify(params),
+            success: function (result) {
+                console.log('post->params = ',params)
+                res = result.data
+            }
+        });
+        return res
+    },
+
+    /**
+     * Put 同步请求 jquery 方法
+     * @param {*} url 
+     * @param {*} params
+     */
+    Put: function (url, params) {
+        let res = null
+        jquery.ajax({
+            url: baseUrl+url,
+            type: "put",
+            data: JSON.stringify(params),
+            success: function (result) {
+                res = result.data
+            }
+        });
+        return res
+    },
+    /**
+     * Delete 同步请求 jquery 方法
+     * @param {*} url 
+     * @param {*} params
+     */
+    Delete: function (url, params) {
+        let res = null
+        jquery.ajax({
+            url: baseUrl+url,            
+            type: "delete",
+            data: JSON.stringify(params),
+            success: function (result) {
+                res = result.data
+            }
+        });
+        return res
+    },
+    /**
+     * get 异步请求 axios方法
+     * @param url 接口路由
+     * @param auth 是否需要带登录信息
+     */
+    async AsyncGet(url) {
+        return axios.get(url);
+    },
+
+    /**
+     * post 异步请求 axios方法
      *
      * @param url 接口路由
-     * @param data 接口参数
+     * @param params 接口参数
      * @param auth 是否需要带登录信息
-     * @returns {AxiosPromise<any>}
      */
-    Post(url, data, auth = false) {       
-        if (auth) {
-            return axios.post(url, data, {headers: {Authorization: 'Your back-end user authenticates information'}});
-        } else {
-            return axios.post(url, data);
-        }
+    async AsyncPost(url, params) {       
+        return axios.post(url, params);
     },
 
     /**
-     * put请求
+     * put 异步请求 axios方法
      * @param url 接口路由
      * @param data 接口参数
      * @param auth 是否需要带登录信息
-     * @returns {AxiosPromise<any>}
      */
-    Put(url, data, auth = false) {
-        if (auth) {
-            return axios.put(url, data, {headers: {Authorization: 'Your back-end user authenticates information'}});
-        } else {
-            return axios.put(url, data);
-        }
+    async AsyncPut(url, data) {
+        return axios.put(url, data);
     },
 
     /**
-     * 删除
+     * 删除 异步请求 axios方法
      * @param url 接口路由
      * @param auth 是否需要带登录信息
-     * @returns {AxiosPromise}
      */
-    Del(url, auth = false) {
-        if (auth) {
-            return axios.delete(url, {headers: {Authorization: 'Your back-end user authenticates information'}});
-        } else {
-            return axios.delete(url);
-        }
+    async AsyncDel(url) {
+        return axios.delete(url);
     },
 
     /**
-     * 上传文件
+     * 上传文件 axios方法
      * @param url 接口路由
      * @param file 接口文件
-     * @param auth 是否需要带登录信息
      */
-    Uploader(url, file, auth = false) {
+    Uploader(url, file) {
         let param = new FormData();
         param.append('file', file)
-        if (auth) {
-            return axios.post(url, param, {headers: {Authorization: 'Your back-end user authenticates information'}})
-        } else {
-            return axios.post(url, param)
-        }
+        return axios.post(url, param)
     },
 }

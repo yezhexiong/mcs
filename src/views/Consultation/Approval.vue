@@ -17,16 +17,15 @@
     </template>
     <span slot="action" slot-scope="text, record">
       <template>
-        <a @click="openEditForm(record.id)">详细</a>
+        <a @click="openEditForm(record)">详细</a>
       </template>
     </span>
   </a-table>
   <!-- EditForm组件props的visible控制窗体是否显示 visible.sync声明后 子组件即可通过 this.$emit('update:visible',false); 方式直接修改props变量-->
-  
   <edit-form
     ref="editForm"
-    :visible.sync="editFormVisible"
-    :primary-key="formPrimaryKey"
+    :visible.sync="formVisible"
+    :form-model="formModel"
   />  
 </div>
 </template>
@@ -71,8 +70,8 @@ export default {
       columns,
       pagination:{hideOnSinglePage:true,pageSize:10000},//hideOnSinglePage 只有页则不显示分页控件
       loading: true,
-      editFormVisible: false,
-      formPrimaryKey:"",
+      formVisible: false,
+      formModel:{},
     };
   },
   mounted() {//mounted 是生命周期方法之一，会在对应生命周期时执行。
@@ -119,7 +118,7 @@ export default {
         ...this.queryParam,
       };
 
-      this.$Http.AsyncPost(this.$Api.Consultation.ApplyList,postParams).then(res => {
+      this.$Http.AsyncPost(this.$Api.Consultation.ApprovalList,postParams).then(res => {
           const pagination = { ...this.pagination };
           // Read total count from server
           // pagination.total = data.totalCount;
@@ -134,12 +133,11 @@ export default {
           this.pagination = pagination;
       });
     },
-    /**  */
-    openEditForm(id="-1") {//打开对话框 id为空表示新建
-      this.editFormVisible = true;
-      this.formPrimaryKey=id;
-    },
-    
+    openEditForm (record) {//打开对话框
+      console.log(record)
+      this.formModel = { ...record }//表单数据
+      this.formVisible = true;
+    }
   },
 };
 </script>

@@ -71,7 +71,7 @@ export default {
         if (!err) {
           let sha1Pass = sha1(values.password).toUpperCase()
           const loginParams = "?dbUser="+values.account+"&pwd="+sha1Pass;
-          this.$Http.Get(this.$Api.Login.login+loginParams).then((res) => this.loginSuccess(res));
+          this.$Http.AsyncGet(this.$Api.Login.login+loginParams).then((res) => this.loginSuccess(res));
         }
       });
     },
