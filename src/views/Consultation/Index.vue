@@ -44,7 +44,7 @@
               </a-select>
             </a-form-model-item>
             <a-form-model-item>
-                <a-button type="primary" icon="plus" style="margin-left: 8px" @click="openEditForm">新建</a-button>
+                <a-button type="primary" icon="plus" style="margin-left: 8px" @click="openEditForm">新建(测试入口)</a-button>
             </a-form-model-item>
           </div>
           <div v-if="curlTab==='approval-list'">
@@ -84,7 +84,28 @@ export default {
       }
     },
     openEditForm(){
-      this.$refs.apply_table.openEditForm();
+      // let param = {
+      //   "strpatientid": "string",
+      //   "strwardcode": "string",
+      //   "nbedno": 0,
+      //   "strvisitid": "string",
+      //   "strdeptcode": "string"
+      // }
+      let param = {
+        "strpatientid": "T620020527",
+        "strvisitid": "2060358",
+      }
+      this.$Http.AsyncPost(this.$Api.Patient.GetInPatBasicInfo,param).then(res => {
+        let formInitData = {
+          isCreat:true,//是否创建
+          patientid:res.data.patientid,//患者主键
+          name:res.data.name,//患者姓名
+          visitid:res.data.visitid,//就诊主键
+          diagnosis:res.data.diagnosis,//患者主诊断
+        }
+        console.log('formInitData=',formInitData)
+        this.$refs.apply_table.openEditForm(formInitData)
+      })
     },
     // function(dates: [moment, moment] | [string, string], dateStrings: [string, string])
     // dateRegionChange(dates, dateStrings){

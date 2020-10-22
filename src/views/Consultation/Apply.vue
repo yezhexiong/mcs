@@ -5,19 +5,19 @@
   -->
   <a-table 
     :columns="columns"
-    :data-source="data" 
+    :data-source="data"
     :scroll="{ x: 1500}"
     :pagination="pagination"
     :loading="loading"
     size="small"
     @change="handleTableChange"
     >
-    <template slot="ReceiveNumInfo" slot-scope="text, record">
-       {{ record.ReceiveNum+'/'+record.ReceiveAll }}
+    <template slot="receivenumInfo" slot-scope="text, record">
+       {{ record.receivenum+'/'+record.receiveall }}
     </template>
     <span slot="action" slot-scope="text, record">
       <template>
-        <a @click="openEditForm(record.id)">详细</a>
+        <a @click="openEditForm({primaryKey:record.consulno})">详细</a>
       </template>
     </span>
   </a-table>
@@ -26,7 +26,7 @@
   <edit-form
     ref="editForm"
     :visible.sync="editFormVisible"
-    :primary-key="formPrimaryKey"
+    :init-data="formInitData"
   />  
 </div>
 </template>
@@ -36,14 +36,14 @@ import editForm from '@/views/Consultation/EditForm'
 const columns = [
   { title: '床号', width: 60, dataIndex: 'bedlabel', key: 'bedlabel', fixed: 'left' },
   { title: '住院号', dataIndex: 'inpno', key: 'age', fixed: 'left' },
-  { title: '姓名', dataIndex: 'patientid', key: 'patientid',  fixed: 'left'},
-  { title: '病区', dataIndex: 'VisitInfoWarName', key: 'VisitInfoWarName'},
+  { title: '姓名', dataIndex: 'name', key: 'name',  fixed: 'left'},
+  { title: '病区', dataIndex: 'visitinfowarname', key:'visitinfowarname'},
   { title: '会诊类型', dataIndex: 'consultationtype', key: 'consultationtype'},
-  { title: '会诊科室', dataIndex: 'VisitInfoDeptName', key: 'VisitInfoDeptName'},
-  { title: '会诊医生', dataIndex: 'consultationdoclist', key: 'consultationdoclist'},
+  { title: '会诊科室', dataIndex: 'consultationdeptlist', key: 'consultationdeptlist', width:'300px', ellipsis: true},
+  { title: '会诊医生', dataIndex: 'consultationdoclist', key: 'consultationdoclist', width:'150px', ellipsis: true},
   { title: '会诊目的', dataIndex: 'consultationpurpose', key: 'consultationpurpose', ellipsis: true},
-  { title: '申请会诊时间', dataIndex: 'applydate', key: 'applydate',ellipsis: true},
-  { title: '会诊接收情况', key: 'ReceiveNumInfo' ,scopedSlots: { customRender: 'ReceiveNumInfo' },},
+  { title: '申请会诊时间', dataIndex: 'applydate', key: 'applydate',ellipsis: true, width:'200px'},
+  { title: '会诊接收情况', key: 'receivenumInfo' ,scopedSlots: { customRender: 'receivenumInfo' },},
   { title: '会诊状态', dataIndex: 'pat_status', key: 'pat_status' },//,scopedSlots: { customRender: 'patStatus' },
   {
     title: '操作',
@@ -72,7 +72,7 @@ export default {
       pagination:{hideOnSinglePage:true,pageSize:10000},//hideOnSinglePage 只有页则不显示分页控件
       loading: true,
       editFormVisible: false,
-      formPrimaryKey:"",
+      formInitData:{},
     };
   },
   mounted() {//mounted 是生命周期方法之一，会在对应生命周期时执行。
@@ -135,9 +135,9 @@ export default {
       });
     },
     /**  */
-    openEditForm(id="-1") {//打开对话框 id为空表示新建
+    openEditForm(obj={}) {
       this.editFormVisible = true;
-      this.formPrimaryKey=id;
+      this.formInitData=obj;
     },
     
   },
