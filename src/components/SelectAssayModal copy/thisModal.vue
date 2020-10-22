@@ -6,20 +6,16 @@
       :footer="null" 不显示底部按钮 
     -->
     <a-modal 
-      class="select-assay-modal"
       :visible="visible" 
-      :closable="false" 
+      title="导入检验" 
       centered
-      width="850px" 
+      width="800px" 
       cancel-text="取消"
       @cancel="closeModal"
       ok-text="确认导入"
       @ok="confirmImport"
     >
-    <this-content 
-      name="叶哲雄"
-      sex="男"
-    />
+    <this-content />
     </a-modal>
   </div>
 </template>
@@ -47,15 +43,3 @@ export default {
   },
 };
 </script>
-<style>
-.select-assay-modal .ant-modal-body {
-  padding: 0;
-}
-.select-assay-modal .ant-table-small {
-  border: 0;
-  height: 640px;
-}
-.select-assay-modal .ant-col:not(:last-child){
-  border-right:solid 1px #e8e8e8;
-}
-</style>

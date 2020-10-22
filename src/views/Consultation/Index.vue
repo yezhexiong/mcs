@@ -139,7 +139,7 @@ export default {
 #index_tabs .ant-tabs-bar {
     background: #DFF4FA;
     margin:0;
-    overflow: hidden;
+    overflow: hidden;    
 }
 
 #index_tabs .ant-tabs-ink-bar {

@@ -106,7 +106,7 @@
 
           <select-assay-modal
             ref="select-assay-modal"
-            :visible.sync="selectAssayVisible"
+            :visible.sync="selectAssayVisible"            
           />
 
           <a-form-model-item label="补充患者资料" prop="region">
