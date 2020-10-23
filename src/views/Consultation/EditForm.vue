@@ -105,8 +105,9 @@
           </a-form-model-item>
 
           <select-assay-modal
-            ref="select-assay-modal"
-            :visible.sync="selectAssayVisible"            
+            ref="selectAssayModal"
+            :visible.sync="selectAssayVisible"
+            @confirmImport="handlerConfirmImportAssay"
           />
 
           <a-form-model-item label="补充患者资料" prop="region">
@@ -260,6 +261,7 @@ export default {
         "approvalstatus":"-1",
         "consultationpurpose":"",
         "consultationattr":'2',//默认普通平会诊
+        "memo":''
       },
 
       dict_staging_method:this.$GlobalDict.TumorStaging.StagingMethod.GetDict(),
@@ -451,6 +453,15 @@ export default {
     },
     selectDoctors() {//选择会诊对象
       alert("选择会诊对象")
+    },
+    handlerConfirmImportAssay(selects){
+      let tmp = []
+      tmp.push("----------------------------------------------------------------------\n")//toUpper
+      selects.forEach(item=>{
+        tmp.push(`key:${item.key}   |    name:${item.name}   |    date:${item.date}\n`)
+        tmp.push("----------------------------------------------------------------------\n")//toUpper
+      })
+      this.formModel.memo += tmp
     },
     handleSearchInDefinitediagnosis(value){//会诊诊断 模糊搜索
       let searchParam = {

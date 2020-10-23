@@ -1,6 +1,21 @@
+
+ <!-- 
+   组件名称:检验导入组件
+   作者：yezhexiong
+   API 
+    visible.sync 窗体是否显示
+   事件 
+    confirmImport 确认导入回调事件
+
+    <select-assay-modal
+      ref="selectAssayModal"
+      :visible.sync="selectAssayVisible"
+      @confirmImport="handlerConfirmImportAssay"
+    />
+-->
 <template>
   <div>
-      <!-- 
+    <!-- 
       :visible="visible" 是否显示
       centered 垂直居中显示
       :footer="null" 不显示底部按钮 
@@ -17,8 +32,7 @@
       @ok="confirmImport"
     >
     <this-content 
-      name="叶哲雄"
-      sex="男"
+      ref="selectAssayContent"
     />
     </a-modal>
   </div>
@@ -42,20 +56,10 @@ export default {
       this.$emit('update:visible',false); //父组件里通过.sync的props变量，才能通过次方式进行修改 这里是:visible.sync
     },
     confirmImport() {//确认导入
+      console.log('this.$refs.selectAssayContent.selectData=',this.$refs.selectAssayContent.selectData)
+      this.$emit('confirmImport', this.$refs.selectAssayContent.selectData)
       this.closeModal();
     },
   },
 };
 </script>
-<style>
-.select-assay-modal .ant-modal-body {
-  padding: 0;
-}
-.select-assay-modal .ant-table-small {
-  border: 0;
-  height: 640px;
-}
-.select-assay-modal .ant-col:not(:last-child){
-  border-right:solid 1px #e8e8e8;
-}
-</style>
