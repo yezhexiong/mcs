@@ -100,7 +100,7 @@
           <a-form-model-item label="患者病情" prop="memo">
             <a-button type="link" @click="() => { $refs.name.onFieldBlur(); }">导入病情</a-button>
             <a-button type="link" @click="() => {selectAssayVisible=true;}">导入检验</a-button>
-            <a-button type="link" @click="selectCommonTarget('治疗效果评价')">导入检查</a-button>
+            <a-button type="link" @click="() => {selectExaminationVisible=true;}">导入检查</a-button>
             <a-input v-model="formModel.memo" type="textarea" placeholder="请简单描述患者病情" style="height:100px"/>
           </a-form-model-item>
 
@@ -109,7 +109,11 @@
             :visible.sync="selectAssayVisible"
             @confirmImport="handlerConfirmImportAssay"
           />
-
+          <select-examination-modal
+            ref="selectExaminationModal"
+            :visible.sync="selectExaminationVisible"
+            @confirmImport="handlerConfirmImportExamination"
+          />
           <a-form-model-item label="补充患者资料" prop="region">
             <a-upload-dragger
               name="file"
@@ -284,6 +288,7 @@ export default {
       },
       doctors: ['何云松   100236 呼吸内科', 'XXXX专家组', '呼吸内科'],
       selectAssayVisible:false,//检验选择对话框显示
+      selectExaminationVisible:false,//检验选择对话框显示
     };
   },
   mounted() {//mounted 是生命周期方法之一，会在对应生命周期时执行。
@@ -463,6 +468,16 @@ export default {
       })
       this.formModel.memo += tmp
     },
+    handlerConfirmImportExamination(selects){
+      let tmp = []
+      tmp.push("----------------------------------------------------------------------\n")//toUpper
+      selects.forEach(item=>{
+        tmp.push(`key:${item.key}   |    name:${item.name}   |    date:${item.date}\n`)
+        tmp.push("----------------------------------------------------------------------\n")//toUpper
+      })
+      this.formModel.memo += tmp
+    },
+    
     handleSearchInDefinitediagnosis(value){//会诊诊断 模糊搜索
       let searchParam = {
         "enumoutercoding": 14,
