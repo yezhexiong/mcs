@@ -27,7 +27,8 @@ axios.interceptors.request.use(config => {
         config.headers['userid'] = globalData.LoginUserInfo.userid; 
         config.headers['hospitalid'] = globalData.LoginUserInfo.hospitalid; 
     }
-  
+    config.headers['Content-Type'] = 'application/json-patch+json;charset=UTF-8'
+    
   // ---- 历史header字段 end ----
 
 //   loadingInstance = Loading.service({       // 发起请求时加载全局loading，请求失败或有响应时会关闭
@@ -48,6 +49,7 @@ axios.interceptors.request.use(config => {
 //   if (config.url.includes('pur/contract/upload')) {
 //     config.headers['Content-Type'] = 'multipart/form-data'
 //   }
+
   return config
 }, errorHandler)
 
@@ -72,7 +74,7 @@ jquery.ajaxSetup({
     timeout: timeout,
     async:false,
     dataType: 'json',
-    contentType: "application/json;charset=UTF-8",//设置该格式后，data参数必须用 JSON.stringify(params) 进行处理    
+    contentType: "application/json-patch+json;charset=UTF-8",//设置该格式后，data参数必须用 JSON.stringify(params) 进行处理    
     //请求失败遇到异常触发
     error: function (xhr,status,error) { errorHandler(error)},
     //完成请求后触发。即在success或error触发后触发
@@ -96,7 +98,6 @@ jquery.ajaxSetup({
     beforeSend: function (xhr) {
         console.log('$.ajaxSetup -> beforeSend1') 
         if(typeof(globalData.LoginUserInfo) !== 'undefined'){
-            console.log('可以设置自定义标头') 
             //可以设置自定义标头
             xhr.setRequestHeader('Access-Token',globalData.AccessToken );
             xhr.setRequestHeader('dbuser', globalData.LoginUserInfo.dbuser);

@@ -5,6 +5,7 @@
 import storage from 'store'
 import http from './Http'
 import api from '../contract/Api'//后端接口地址约定
+import { CACHE_DICT_PREFIX } from '@/contract/Const'
 
 
 /**
@@ -14,7 +15,7 @@ class dictHelper {
     constructor(dictCategory) {
         this.dictCategory = dictCategory
         this.dicts = []
-        this.cachepPrefixKey = "dict_common_"
+        this.cachepPrefix = CACHE_DICT_PREFIX //字典缓存前缀
         /**
          * 加载字典表数据
          */
@@ -27,14 +28,14 @@ class dictHelper {
                 "dict_status": 1
             }
             this.dicts = http.Post(api.Common.GetWidgetDict, postParams)
-            storage.set(this.cachepPrefixKey + this.dictCategory, this.dicts, 7 * 24 * 60 * 60 * 1000)
+            storage.set(this.cachepPrefix + this.dictCategory, this.dicts, 7 * 24 * 60 * 60 * 1000)
         }
         /**
          * 获取字典
          */
         this.GetDict = function () {
             if (typeof (this.dicts) == 'undefined' || this.dicts.length === 0) {
-                this.dicts = storage.get(this.cachepPrefixKey + this.dictCategory)
+                this.dicts = storage.get(this.cachepPrefix + this.dictCategory)
             }
             if (typeof (this.dicts) == 'undefined' || this.dicts.length === 0) {
                 this.LoadDict()
@@ -64,7 +65,7 @@ class dictHelper {
          */
         this.RemoveDict = function () {
             this.dicts = []
-            storage.remove(this.cachepPrefixKey + this.dictCategory)
+            storage.remove(this.cachepPrefix + this.dictCategory)
         }
     }
 }

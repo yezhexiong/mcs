@@ -1,5 +1,5 @@
 /*
-组件名称:检验导入组件
+组件名称:选择会诊对象
 作者：yezhexiong
 API 
  visible.sync 窗体是否显示
@@ -16,7 +16,7 @@ import selectDoctorsModal from './thisModal'
 import './thisStyle.less'
 
 selectDoctorsModal.install = function (Vue) {
-  Vue.component('select-Doctors-modal', selectDoctorsModal)//全局注册
+  Vue.component('select-doctors-modal', selectDoctorsModal)//全局注册
 }
 
 export default selectDoctorsModal
