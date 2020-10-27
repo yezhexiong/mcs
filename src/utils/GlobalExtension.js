@@ -176,7 +176,7 @@ extensionFunc.String = {
     // toString(16)
     on16: function (str) {
         var a = [], i = 0;
-        for (; i < str.length; ) a[i] = ("00" + str.charCodeAt(i++).toString(16)).slice(-4);
+        for (; i < str.length;) a[i] = ("00" + str.charCodeAt(i++).toString(16)).slice(-4);
         return "\\u" + a.join("\\u");
     },
     // unString(16)
@@ -192,7 +192,7 @@ extensionFunc.String = {
         if (str == null) { return ""; }
         if (str == "") { return ""; }
         if (!f || f == "") { f = "yyyy-MM-dd"; }
-        str = str.replace('T',' ');
+        str = str.replace('T', ' ');
         var myDate = new Date(str.replace(/[-]/g, '/'));
         return extensionFunc.Date.format(myDate, f); //格式化时间  
     },
@@ -403,9 +403,59 @@ extensionFunc.Function = {
     }
 };
 
+/************************************************* Array *****************************************************/
+extensionFunc.Array = {
+    /**
+     *  方法:Array.indexOf(val)
+     *  功能:根据元素值确定位置.
+     *  参数:元素值
+     *  返回:在原数组上修改数组
+     * @param {*} val 
+     */
+    indexOfValue: function (arr,val) {
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i] === val) {
+                return i;
+            }
+        }
+        return -1;
+    },
+    /**
+     *  方法:Array.removeValue(val)
+     *  功能:根据元素值删除数组元素.
+     *  参数:元素值
+     *  返回:在原数组上修改数组
+     * @param {*} val 
+     */
+    removeValue: function (arr,val) {
+        var index = arr.indexOfValue(val);
+        if (index > -1) {
+            arr.splice(index, 1);
+        }
+    },
+    /**
+     *  方法:Array.remove(index)
+     *  功能:根据元素位置值删除数组元素.
+     *  参数:元素值
+     *  返回:在原数组上修改数组
+     * @param {*} index 
+     */
+    removeIndex: function (arr,index) {
+        if (isNaN(index) || index > arr.length) {
+            return false;
+        }
+        for (var i = 0, n = 0; i < arr.length; i++) {
+            if (arr[i] != arr[index]) {
+                arr[n++] = arr[i];
+            }
+        }
+        arr.length -= 1;
+    }
+};
+
 /************ 配套相关方法 **************/
 extensionFunc.others = {
-    ext:function (target, src, is) {
+    ext: function (target, src, is) {
         if (!target) target = {};
         for (var it in src) {
             if (is) {
@@ -422,7 +472,7 @@ extensionFunc.others = {
             }
         }
     },
-    _onlyPush : function (arr, it) {
+    _onlyPush: function (arr, it) {
         if (it.constructor != Array) it = [it];
         return extensionFunc.Array.unique(arr.concat(it));
     }
@@ -434,6 +484,7 @@ extensionFunc.install = function () {
     extensionFunc.others.ext(String.prototype, extensionFunc.String, true); extensionFunc.others._onlyPush
     extensionFunc.others.ext(Function.prototype, extensionFunc.Function, true);
     extensionFunc.others.ext(Date.prototype, extensionFunc.Date, true);
+    extensionFunc.others.ext(Array.prototype, extensionFunc.Array, true);
 }
 
 extensionFunc.install();

@@ -53,21 +53,17 @@ export default {
      * 获取所有科室医生(异步)
      */
     async GetAllDoctors() {
-        console.log('this._doctors=', this._doctors)
-        console.log('从{this.dicts}获取所有科室医生')
         if (typeof (this._doctors) == 'undefined' || this._doctors.length === 0) {
             this._doctors = storage.get(CACHE_GLOBAL_PREFIX + 'Doctors')
-            console.log('从{storage}获取所有科室医生')
         }
         if (typeof (this._doctors) == 'undefined' || this._doctors.length === 0) {
-            console.log('从后端获取所有科室医生')
             let url = api.Common.GetStaffList;
             let groups = []
             let offices = await this.GetOffices()
             offices.forEach(element => {
                 groups.push(element.itemcode)
             });
-            console.log('groups=',groups)
+            console.log('groups=', groups)
             let param = {
                 GroupClass: null,
                 ListGroupCode: groups,
@@ -81,46 +77,56 @@ export default {
             let res = await http.AsyncPost(url, param)
             let list = res.data;
             if (typeof (list) == "undefined") {
-                alert('未找到任何医生，请联系管理员')
                 this.$message.error('未找到任何医生，请联系管理员')
                 return []
             }
-            const newList = list.map(item => { 
-                delete item.antibioticdruglimit
-                delete item.cancle
-                delete item.deptcode
-                delete item.deptname
-                delete item.doctorinsurance
-                delete item.doctorphone
-                delete item.empno
-                delete item.presclimitinp
-                delete item.surcls
-                delete item.job
-                delete item.title
-                delete item.username
-                return item
-            });
-     
-            
-            storage.set(CACHE_GLOBAL_PREFIX + 'Doctors', newList, 7 * 24 * 60 * 60 * 1000)
+
+            storage.set(CACHE_GLOBAL_PREFIX + 'Doctors', list, 7 * 24 * 60 * 60 * 1000)
             this._doctors = list
         }
         return this._doctors
+    },
+    /**
+     * 获取科室医生(分页)
+     * @param {pagination} pagination 
+     */
+    async GetDoctorsInPage(pagination={pageSize: 15,current:1,total:0}, searchKey='') {
+        let list = await this.GetAllDoctors()
+        let tmpList = []
+        if(searchKey === ''){
+            tmpList = list
+        }else{
+            tmpList = list.filter((item) => {//模糊搜索
+                if (item.name.indexOf(searchKey) > -1 || item.inputcode.indexOf(searchKey) > -1) {
+                    return true;
+                }
+            });
+        }
+        if(tmpList.length === 0){
+            return {
+                total: 0,
+                data: []
+            }
+        }
+        let start = (pagination.current - 1) * pagination.pageSize
+        let end = start + pagination.pageSize
+        if(end>tmpList.length) {end =tmpList.length}
+        console.log('start=',start)
+        console.log('end=',end)
+        return {
+            total: tmpList.length,
+            data: tmpList.slice(start, end)
+        }
     },
     _offices: [],
     /**
      * 获取所有科室(异步)
      */
     async GetOffices() {
-        console.log('this._offices=', this._offices)
-        console.log('从{this._offices}获取所有科室')
         if (typeof (this._offices) == 'undefined' || this._offices.length === 0) {
             this._offices = storage.get(CACHE_GLOBAL_PREFIX + 'Offices')
-            console.log('从{storage}获取所有科室')
-            console.log('this._offices=', this._offices)
         }
         if (typeof (this._offices) == 'undefined' || this._offices.length === 0) {
-            console.log('从后端获取所有科室')
             let url = api.Common.GetCodeConfig;
             let param = 300;
             let res = await http.AsyncPost(url, param);
@@ -133,5 +139,37 @@ export default {
             this._offices = list;
         }
         return this._offices
+    },
+    /**
+     * 获取科室(分页)
+     * @param {pagination} pagination 
+     */
+    async GetOfficesInPage(pagination={pageSize: 15,current:1,total:0}, searchKey='') {
+        let list = await this.GetOffices()
+        let tmpList = []
+        if(searchKey === ''){
+            tmpList = list
+        }else{
+            tmpList = list.filter((item) => {//模糊搜索
+                if (item.itemname.indexOf(searchKey) > -1 || item.inputcode.indexOf(searchKey) > -1) {
+                    return true;
+                }
+            });
+        }
+        if(tmpList.length === 0){
+            return {
+                total: 0,
+                data: []
+            }
+        }
+        let start = (pagination.current - 1) * pagination.pageSize
+        let end = start + pagination.pageSize
+        if(end>tmpList.length) {end =tmpList.length}
+        console.log('start=',start)
+        console.log('end=',end)
+        return {
+            total: tmpList.length,
+            data: tmpList.slice(start, end)
+        }
     },
 }
