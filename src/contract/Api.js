@@ -33,7 +33,9 @@ export default {
         SerchCodeConfig:'/DictAdminService/GetSerchCodeConfig',//根据字典标识获取字典文件
         GetCodeConfig:'/DictAdminService/GetCodeConfig',//根据字典标识获取字典文件
         GetStaffList:'/DoctorAdminService/GetStaffList',//查询工作人员信息
-        
+        GetLabTestItem:'/LabTestService/GetLabTestAlready',//获取病人已经检验项目
+        GetLabTestItemInfo:'/LabTestService/GetPatCpoeTestResultList',//获取病人已经检验项目明细
+        GetExamReport:'/ExamService/GetCpoeExamReportList',//获取病人检查项目结果数据
     }
 
     // 当然也可以用文件方式进行管理

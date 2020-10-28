@@ -220,7 +220,7 @@
                     <!-- <a-select-option v-for="(item,index)  in dict_staging_method" :key="index" :value="item.dict_code"  >{{item.dict_value}}</a-select-option>  -->
                     <a-select-option
                       v-for="item1 in dict_staging_method"
-                      :key="item1"
+                      :key="item1.dict_value"
                       :value="item1.dict_code"
                       >{{ item1.dict_value }}</a-select-option
                     >
@@ -239,7 +239,7 @@
                   >
                     <a-select-option
                       v-for="item2 in dict_classification_stages"
-                      :key="item2"
+                      :key="item2.dict_value"
                       :value="item2.dict_code"
                       >{{ item2.dict_value }}</a-select-option
                     >
@@ -260,7 +260,7 @@
                   >
                     <a-select-option
                       v-for="item3 in dict_primary_tumor"
-                      :key="item3"
+                      :key="item3.dict_value"
                       :value="item3.dict_code"
                       >{{ item3.dict_value }}</a-select-option
                     >
@@ -279,7 +279,7 @@
                   >
                     <a-select-option
                       v-for="item4 in dict_lymph_metastasis"
-                      :key="item4"
+                      :key="item4.dict_value"
                       :value="item4.dict_code"
                       >{{ item4.dict_value }}</a-select-option
                     >
@@ -300,7 +300,7 @@
                   >
                     <a-select-option
                       v-for="item5 in dict_distant_metastasis"
-                      :key="item5"
+                      :key="item5.dict_value"
                       :value="item5.dict_code"
                       >{{ item5.dict_value }}</a-select-option
                     >
@@ -319,7 +319,7 @@
                   >
                     <a-select-option
                       v-for="item6 in dict_by_stages"
-                      :key="item6"
+                      :key="item6.dict_value"
                       :value="item6.dict_code"
                       >{{ item6.dict_value }}</a-select-option
                     >
@@ -338,24 +338,24 @@
               <a-icon type="plus" /> 添加对象
             </a-tag>
             <template v-for="tag in doctors">
-              <a-tooltip v-if="tag.length > 20" :key="tag" :title="tag">
+              <a-tooltip v-if="tag.value.length > 20" :key="tag.key" :title="tag.vlaue">
                 <a-tag
-                  :key="tag"
+                  :key="tag.key"
                   :closable="true"
-                  @close="() => handleClose(tag)"
+                  @close="() => handleClose(tag.key)"
                   color="#f50"
                 >
-                  {{ `${tag.slice(0, 20)}...` }}
+                  {{ `${tag.value.slice(0, 20)}...` }}
                 </a-tag>
               </a-tooltip>
               <a-tag
                 v-else
-                :key="tag"
+                :key="tag.key"
                 :closable="true"
-                @close="() => handleClose(tag)"
+                @close="() => handleClose(tag.key)"
                 color="#f50"
               >
-                {{ tag }}
+                {{ tag.value }}
               </a-tag>
             </template>
           </a-form-model-item>
@@ -398,11 +398,15 @@
     <select-assay-modal
       ref="selectAssayModal"
       :visible.sync="selectAssayVisible"
+      :patientId="formModel.patientid"
+      :patientName="formModel.name"
       @confirmImport="handlerConfirmImportAssay"
     />
     <select-examination-modal
       ref="selectExaminationModal"
       :visible.sync="selectExaminationVisible"
+      :patientId="formModel.patientid"
+      :patientName="formModel.name"
       @confirmImport="handlerConfirmImportExamination"
     />
     <select-doctors-modal
@@ -424,7 +428,7 @@ export default {
         return {
           isCreat: false, //是否创建
           primaryKey: 0, //如果不是创建，则需要传递主键值
-          patientId: "001", //患者主键
+          patientId: "", //患者主键
           patientName: "叶哲雄", //患者姓名
           patientVisitId: "001", //就诊主键
           patientDiagnosis: "小感冒", //患者主诊断
@@ -487,7 +491,7 @@ export default {
           { required: true, message: "请选择分期方法", trigger: "blur" },
         ],
       },
-      doctors: ["何云松   100236 呼吸内科", "XXXX专家组", "呼吸内科"],
+      doctors: [],
       selectAssayVisible: false, //检验选择对话框显示
       selectExaminationVisible: false, //检验选择对话框显示
       selectDoctorsVisible: false, //会诊对象选择对话框显示
@@ -515,14 +519,14 @@ export default {
   },
   methods: {
     loadData() {
-      if (this.primaryKey !== 0) {
+      if (this.initData.primaryKey !== 0) {
         this.formSpinning = true;
         let url =
           this.$Api.Consultation.ApplyInfo +
           "?folio=" +
           this.initData.primaryKey;
         this.$Http.AsyncPost(url).then((res) => {
-          this.formModel = res.data;
+          this.formModel = res.data;          
           this.formSpinning = false;
         });
       }
@@ -683,36 +687,26 @@ export default {
     },
     handlerConfirmImportAssay(selects) {
       let tmp = [];
-      tmp.push(
-        "----------------------------------------------------------------------\n"
-      ); //toUpper
+      tmp.push("\n================= 检验结果  =================\n");
       selects.forEach((item) => {
         tmp.push(
-          `key:${item.key}   |    name:${item.name}   |    date:${item.date}\n`
-        );
-        tmp.push(
-          "----------------------------------------------------------------------\n"
-        ); //toUpper
+          `检查项:${item.resultitemname}   |    值:${item.result}   |    单位:${item.unit}   |    参考:${item.normalresult}\n`
+        );        
+        tmp.push("----------------------------------------------------------------------\n");
       });
       this.formModel.memo += tmp;
     },
     handlerConfirmImportExamination(selects) {
       let tmp = [];
-      tmp.push(
-        "----------------------------------------------------------------------\n"
-      ); //toUpper
       selects.forEach((item) => {
-        tmp.push(
-          `key:${item.key}   |    name:${item.name}   |    date:${item.date}\n`
-        );
-        tmp.push(
-          "----------------------------------------------------------------------\n"
-        ); //toUpper
+        tmp.push(`\n============== {${item.item}}检验结果  ==============\n`);
+        tmp.push(item.value);       
       });
+      tmp.push("\n----------------------------------------------------------------------\n");
       this.formModel.memo += tmp;
     },
     handlerConfirmImportDoctors(doctors) {
-      console.log("doctors", doctors);
+      this.doctors=doctors
     },
     handleSearchInDefinitediagnosis(value) {
       //会诊诊断 模糊搜索

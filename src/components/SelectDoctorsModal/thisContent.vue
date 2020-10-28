@@ -215,7 +215,6 @@ export default {
       });
     },
     handlerSelectChange(selectedRowKeys) {
-      // this.table3Data = [];
       this.selectedRowKeys = selectedRowKeys;
 
       this.table2Data.forEach((item) => {

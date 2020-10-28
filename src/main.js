@@ -20,7 +20,7 @@ import './styles.less'
 import selectAssayModal from '@/components/SelectAssayModal'//选择检查对话框
 Vue.use(selectAssayModal);//注册代码在控件的install方法里 Vue.component('select-assay-modal', selectAssayModal)
 import selectExaminationModal from '@/components/SelectExaminationModal'//选择检查对话框
-Vue.use(selectExaminationModal);//注册代码在控件的install方法里 Vue.component('select-assay-modal', selectAssayModal)
+Vue.use(selectExaminationModal);//注册代码在控件的install方法里 Vue.component('select-examination-modal', selectExaminationModal)
 import selectDoctorsModal from '@/components/SelectDoctorsModal'//选择会诊对象检查对话框
 Vue.use(selectDoctorsModal);//注册代码在控件的install方法里 Vue.component('select-doctors-modal', selectDoctorsModal)
 Vue.use(Antd);

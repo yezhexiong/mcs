@@ -274,4 +274,23 @@ export default {
         param.append('file', file)
         return axios.post(url, param)
     },
+    /**
+     * 
+     * @param {[Promise,..]} promiseList axios请求集
+     */
+    async AxiosAll(promiseList){
+        //return await this._axiosAll(promiseList)
+        return await axios.all(promiseList).then(axios.spread(function(...resList) {
+            return resList // 拿到所有posts数据
+        }))
+    },
+    /**
+     * 
+     * @param {[Promise,..]} promiseList 
+     */
+    async _axiosAll(promiseList){
+        return axios.all(promiseList).then(axios.spread(function(...resList) {
+            return resList // 拿到所有posts数据
+        }))
+    },
 }

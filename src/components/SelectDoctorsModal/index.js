@@ -9,7 +9,7 @@ API
  <select-assay-modal
    ref="selectAssayModal"
    :visible.sync="selectAssayVisible"
-   @confirmImport="handlerConfirmImportAssay"
+   @confirmImport="handlerConfirmImportDoctors"
  />
 */
 import selectDoctorsModal from './thisModal'

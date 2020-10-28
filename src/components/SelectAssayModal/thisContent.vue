@@ -1,203 +1,271 @@
 <template>
   <div>
-    <a-alert 
-      banner 
-      message="导入检查项"
+    <a-alert
+      banner
+      :message="'导入病人[' + patientName + ']检验'"
       description="选择某检查项目后导入，则导入该项目所有信息；选择某检查项目中某些项后导入，则导入该项的信息；"
       type="info"
     />
-    <a-row>
-      <a-col :span="6">
-        <a-table
-          size="small"
-          :scroll="{ y: 600 }"
-          :pagination="false"
-          :columns="columns"
-          :data-source="data"
-        >
-        <template slot="item1" slot-scope="text,record">
-          <div v-on:click="handlerItem1Click(record.key)" style="cursor:pointer;">
-            <div v-if="record.key===curSelectItem1" style="background:#08979c; width:100%; color:#fff;padding:2px;">{{ record.name }}</div>
-            <div v-else>{{ record.name }}</div>
-          </div>
-        </template>
-        
-      </a-table>
-      </a-col>
-      <a-col :span="9">
-        <a-table
-          size="small"
-          :scroll="{ y: 600 }"
-          :pagination="false"
-          :columns="columns2"
-          :data-source="data2"
-          :row-selection="{ selectedRowKeys: selectedRowKeys, onChange:handlerSelectChange }"
-        />
-      </a-col>
-      <a-col :span="9">
-        <a-table
-          size="small"
-          :scroll="{ y: 600 }"
-          :pagination="false"
-          :columns="columns3"
-          :data-source="selectData"
-        />
-      </a-col>
-    </a-row> 
+    <a-spin tip="Loading..." :spinning="dataSpinning">
+      <a-row>
+        <a-col :span="4">
+          <a-table
+            size="small"
+            :scroll="{ y: 600 }"
+            :pagination="false"
+            :columns="columns"
+            :data-source="dataAllItem"
+          >
+            <template slot="item1" slot-scope="text, record">
+              <div
+                v-on:click="handlerItem1Click(record.testreqno)"
+                style="cursor: pointer"
+              >
+                <div
+                  v-if="record.testreqno === curSelectItem1"
+                  style="
+                    background: #08979c;
+                    width: 100%;
+                    color: #fff;
+                    padding: 2px;
+                  "
+                >
+                  <span>
+                    {{ record.testtext }}
+                  </span>
+                  <span>
+                    {{ record.reqdate.format("yyyy-MM-dd") }}
+                  </span>
+                </div>
+                <div v-else>{{ record.testtext + "  " + record.reqdate }}</div>
+              </div>
+            </template>
+          </a-table>
+        </a-col>
+        <a-col :span="10">
+          <a-table
+            size="small"
+            :scroll="{ y: 600 }"
+            :pagination="false"
+            :columns="columns2"
+            :data-source="dataShowItemInfo"
+            :row-selection="{
+              selectedRowKeys: selectedRowKeys,
+              onChange: handlerSelectChange,
+            }"
+          >
+          </a-table>
+        </a-col>
+        <a-col :span="10">
+          <a-table
+            size="small"
+            :scroll="{ y: 600 }"
+            :pagination="false"
+            :columns="columns3"
+            :data-source="selectedItemInfo"
+          >
+            <template slot="slot3_2" slot-scope="text, record">
+              <a-button
+                icon="delete"
+                size="small"
+                type="primary"
+                @click="handlerCancelSelect(record.key)"
+              ></a-button>
+            </template>
+          </a-table>
+        </a-col>
+      </a-row>
+    </a-spin>
   </div>
 </template>
 
 <script>
-
 const columns = [
-  { title: '检验项目', key: 'item1' ,scopedSlots: { customRender: 'item1' },},
+  { title: "检验项目", key: "item1", scopedSlots: { customRender: "item1" } },
 ];
 const columns2 = [
   {
-    title: '检验项',
-    dataIndex: 'name',
-    key:'col2_1',
-  },{
-    title: '值',
-    dataIndex: 'key',
-    key:'col2_2',
-  },{
-    title: '单位',
-    dataIndex: 'key',
-    key:'col2_3',
-  },{
-    title: '参考',
-    dataIndex: 'date',
-    key:'col2_4',
-  }
+    title: "检验项",
+    dataIndex: "resultitemname",
+    key: "col2_1",
+  },
+  {
+    title: "值",
+    dataIndex: "result",
+    key: "col2_2",
+  },
+  {
+    title: "单位",
+    dataIndex: "unit",
+    key: "col2_3",
+  },
+  {
+    title: "参考",
+    dataIndex: "normalresult",
+    key: "col2_4",
+  },
 ];
 const columns3 = [
   {
-    title: '已选项目',
-    dataIndex: 'name',
-    key:'col3_1',
-  }
+    title: "检验项",
+    dataIndex: "resultitemname",
+    key: "col3_1",
+  },
+  {
+    title: "值",
+    dataIndex: "result",
+    key: "col3_2",
+  },
+  {
+    title: "单位",
+    dataIndex: "unit",
+    key: "col3_3",
+  },
+  {
+    title: "参考",
+    dataIndex: "normalresult",
+    key: "col3_4",
+  },
+  {
+    title: "",
+    width: 60,
+    key: "table3_2",
+    scopedSlots: { customRender: "slot3_2" },
+  },
 ];
 
-const data = [
-  {
-    key: 1,
-    name: `血常规(CBC、DIFF)五分类`,
-    date: '2020-05-27',
-  },
-  {
-    key: 2,
-    name: `网织红细胞计数`,
-    date: '2020-05-27',
-  },
-  {
-    key:3,
-    name: `血清总蛋白测定`,
-    date: '2020-05-27',
-  },
-  {
-    key: 4,
-    name: `血常规(CBC、DIFF)五分类`,
-    date: '2020-05-27',
-  },
-  {
-    key: 5,
-    name: `肌酐测定`,
-    date: '2020-05-27',
-  },
-  ];
-
-const data2 = []
-const data22 = [
-  {
-    key: 1,
-    pkey: 1,
-    name: `血常规(CBC、DIFF)五分类`,
-    date: '2020-05-27',
-  },
-  {
-    key: 2,
-    pkey: 1,
-    name: `网织红细胞计数`,
-    date: '2020-05-27',
-  },
-  {
-    key:3,
-    pkey: 2,
-    name: `血清总蛋白测定`,
-    date: '2020-05-27',
-  },
-  {
-    key: 4,
-    pkey: 2,
-    name: `血常规(CBC、DIFF)五分类`,
-    date: '2020-05-27',
-  },
-  {
-    key: 5,
-    pkey: 2,
-    name: `肌酐测定`,
-    date: '2020-05-27',
-  },
-  ];
-const selectData = [];
-
 export default {
+  props: {
+    //组件入参数定义,入参数参数不允许修改 定义props参数后调用，父组件传值方式 :title="xxxx" 或 title="xxxx"
+    patientId: String, //当前病人主键
+    patientName: String, //当前病人项目
+  },
   data() {
     return {
-      data,
-      data2,
-      data22,
-      selectData,
+      dataAllItem: [],
+      dataShowItemInfo: [],
+      dataAllItemInfo: [],
+      selectedItemInfo: [],
       columns,
       columns2,
       columns3,
       selectedRowKeys: [], // Check here to configure the default column
       loading: false,
-      curSelectItem1:0
+      curSelectItem1: 0,
+      dataSpinning: false, //表单加载状态
     };
   },
-  mounted() {//mounted 是生命周期方法之一，会在对应生命周期时执行。
-    if(data.length > 0) this.handlerItem1Click(data[0].key)
+  watch: {
+    patientId: {
+      handler(val) {
+        console.log("watch patientId=", val);
+        if (typeof this.patientId === "undefined" || this.patientId === "") {
+          this.$message.error("选中病人检验结果窗体，patientId值不能未空");
+          return;
+        }
+        this.dataSpinning = true;
+        let promiseList = []; //axios请求集
+        {
+          let url = this.$Api.Common.GetLabTestItem;
+          let param = {
+            strPatID: this.patientId,
+            nVisitID: null,
+            dtVisitDate: null,
+            nVisitNo: null,
+            bIsInPat: false,
+            eListResultStatus: [51, 52, 53],
+            dtScheduledDateTimeFrom: null,
+            dtScheduledDateTimeTo: null,
+            strListReqDept: [],
+            strWardCode: null,
+            strDeptCode: null,
+            IsError: false,
+            ErrMessage: null,
+          };
+          promiseList.push(this.$Http.AsyncPost(url, param));
+        }
+        {
+          let url = this.$Api.Common.GetLabTestItemInfo;
+          let param = {
+            strPatID: this.patientId,
+            nVisitID: null,
+            dtVisitDate: null,
+            nVisitNo: null,
+            bIsInPat: false,
+            eListResultStatus: [],
+            dtScheduledDateTimeFrom: null,
+            dtScheduledDateTimeTo: null,
+            strListReqDept: [],
+            strWardCode: null,
+            strDeptCode: null,
+            IsError: false,
+            ErrMessage: null,
+          };
+          promiseList.push(this.$Http.AsyncPost(url, param));
+        }
+
+        this.$Http.AxiosAll(promiseList).then((resList) => {
+          this.dataAllItem = resList[0].data;
+          let count = resList[1].data.length;
+          for (let i = 0; i < count; ++i) {
+            let item = resList[1].data[i];
+            item.key = item.testresultno;
+          }
+          this.dataAllItemInfo = resList[1].data;
+          this.dataSpinning = false;
+          if (this.dataAllItem.length > 0){
+            this.handlerItem1Click(this.dataAllItem[0].testreqno)
+          }
+        });
+      },
+      immediate: true,//启动首次监听
+    },
   },
-  computed: {//
-  //  handlerTable2RowSelection() {
-  //     return {
-  //       onChange: (selectedRowKeys, selectedRows) => {
-  //         console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-  //       },
-  //       getCheckboxProps: record => ({
-  //         props: {
-  //           disabled: record.name === 'Disabled User', // Column configuration not to be checked
-  //           name: record.name,
-  //         },
-  //       }),
-  //     };
-  //   },
+  computed: {
   },
   methods: {
-    onSelectChange(selectedRowKeys) {
-      console.log('selectedRowKeys changed: ', selectedRowKeys);
-      this.selectedRowKeys = selectedRowKeys;
-    },
-    handlerItem1Click(val){
-      this.curSelectItem1=val
-      console.log(val)
-      this.data2 = this.data22.filter((item)=>{ return item.pkey === val})
+    // onSelectChange(selectedRowKeys) {
+    //   this.selectedRowKeys = selectedRowKeys;
+    // },
+    handlerItem1Click(val) {
+      this.curSelectItem1 = val;
+      this.dataShowItemInfo = this.dataAllItemInfo.filter((item) => {
+        return item.testreqno === val;
+      });
     },
     handlerSelectChange(selectedRowKeys) {
-      // console.log('selectedRows changed: ', selectedRows);
-      this.selectData=[]
-      this.data22.forEach(item=>{
-        if(selectedRowKeys.includes(item.key)){
-          let isExit = false
-          this.selectData.forEach(obj =>{
-            if(obj.key == item.key){isExit=true}
-          })
-          if(!isExit){this.selectData.push(item)}
-        }
-      })
       this.selectedRowKeys = selectedRowKeys;
+
+      this.dataAllItemInfo.forEach((item) => {
+        if (this.selectedRowKeys.includes(item.testresultno)) {
+          let isExit = false;
+          this.selectedItemInfo.forEach((obj) => {
+            if (obj.testresultno === item.testresultno) {
+              isExit = true;
+            }
+          });
+          if (!isExit) {
+            this.selectedItemInfo.push(item);
+          }
+        }
+      });
+      //去除没有选中的项
+      this.selectedItemInfo.forEach((item) => {
+        if (!this.selectedRowKeys.includes(item.testresultno)) {
+          this.selectedItemInfo.removeValue(item);
+        }
+      });
+    },
+    handlerCancelSelect(key) {
+      console.log("key=", key);
+      this.selectedItemInfo = this.selectedItemInfo.filter((item) => {
+        return item.key !== key;
+      });
+      this.selectedRowKeys.forEach((_key) => {
+        if (_key === key) {
+          this.selectedRowKeys.removeValue(key);
+        }
+      });
     },
   },
 };
