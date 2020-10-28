@@ -59,7 +59,7 @@
             <template slot="slot2" slot-scope="text, record">
               {{ record.value + "(" + record.searchKey + ")" }}
               <span v-if="'3' === curSelectItem1">
-                {{ "(" + record.field2 + ")" }}
+                {{ "(" + record.groupName + ")" }}
               </span>
             </template>
           </a-table>
@@ -73,9 +73,9 @@
             :data-source="table3Data"
           >
             <template slot="slot3" slot-scope="text, record">
-              {{ record.type + record.value + "  " + record.searchKey + "  " }}
-              <span v-if="'' !== record.field2">
-                {{ "(" + record.field2 + ")" }}
+              {{ record.typeName + record.value + "  " + record.searchKey + "  " }}
+              <span v-if="'' !== record.groupName">
+                {{ "(" + record.groupName + ")" }}
               </span>
             </template>
             <template slot="slot3_2" slot-scope="text, record">
@@ -95,6 +95,9 @@
 
 <script>
 export default {
+  props: {//组件入参数定义,入参数参数不允许修改 定义props参数后调用，父组件传值方式 :title="xxxx" 或 title="xxxx"
+    selectedKeys:[],
+  },
   data() {
     return {
       table1Columns: [
@@ -181,12 +184,13 @@ export default {
             id: item.itemcode,
             value: item.itemname,
             searchKey: item.inputcode, //配音首字母
-            field1: "", //field为抽象字段，不同数据代表不同意思
-            field2: "", //
+            groupCode: "",//科室此属性没有意义
+            groupName: "",//科室此属性没有意义
+            deptCode:item.itemcode,//deptcode 为null，而外面接口需要不能为空，所以用主键值覆盖
             pkey: this.table1Data[0].key,
           });
         });
-        this.pagination.total = res.total; //
+        this.pagination.total = res.total;
         this.dataSpinning = false;
       });
     },
@@ -201,12 +205,13 @@ export default {
         console.log("res=", res);
         res.data.forEach((item) => {
           this.table2Data.push({
-            key: item.dbuser + item.groupcode,
+            key: item.dbuser + item.groupcode,//因为医生时，医生编号会有重复，加上部门编码才唯一
             id: item.dbuser,
             value: item.name,
             searchKey: item.inputcode, //配音首字母
-            field1: item.groupcode,
-            field2: item.groupname,
+            groupCode: item.groupcode,
+            groupName: item.groupname,
+            deptCode:item.deptcode,
             pkey: this.table1Data[2].key,
           });
         });
@@ -237,9 +242,12 @@ export default {
               id: item.id,
               key: item.key,
               value: item.value,
-              searchKey: item.searchKey,
-              field2: item.field2,
-              type: _type,
+              groupName: item.groupName,
+              groupCode: item.groupCode,
+              deptCode: item.deptCode,
+              type: this.curSelectItem1,
+              typeName: _type,
+              searchKey: item.searchKey, //配音首字母
             });
           }
         }
@@ -247,9 +255,6 @@ export default {
       //去除没有选中的项
       this.table3Data.forEach((item) => {
         if (!this.selectedRowKeys.includes(item.key)) {
-          // this.table3Data = this.table3Data.filter((item1) => {
-          //   return item1.key !== item.key;
-          // });
           this.table3Data.removeValue(item)
         }
       });
@@ -266,7 +271,6 @@ export default {
       }
     },
     handlerCancelSelect(key) {
-      console.log("key=", key);
       this.table3Data = this.table3Data.filter((item) => {
         return item.key !== key;
       });
@@ -275,7 +279,6 @@ export default {
           this.selectedRowKeys.removeValue(key);
         }
       });
-      console.log("this.selectedRowKeys=", this.selectedRowKeys);
     },
   },
 };

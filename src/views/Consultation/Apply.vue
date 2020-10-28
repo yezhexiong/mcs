@@ -11,6 +11,7 @@
     :loading="loading"
     size="small"
     @change="handleTableChange"
+    rowKey="consulno"
     >
     <template slot="receivenumInfo" slot-scope="text, record">
        {{ record.receivenum+'/'+record.receiveall }}

@@ -14,78 +14,65 @@
     >
       <!-- 对话框自定义按钮 -->
       <template slot="footer">
-        <!-- approvalstatus 流程状态 99:所有，10：取消会诊，11：驳回申请，0：退回，1:激活，2：完成，3：终止,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收) -->
-        <span
-          v-if="
-            formModel.approvalstatus === '15' || formModel.approvalstatus === ''
-          "
-        >
+        <!-- pat_status 流程状态 99:所有，10：取消会诊，11：驳回申请，0：退回，1:激活，2：完成，3：终止,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收) -->
+        <span v-if="formModel.pat_status === 15 || formModel.pat_status === -1">
           <a-button
             key="btnSend"
             type="primary"
             :loading="btnSendLoading"
-            @click="onSend"
+            @click="handlerSend"
             >发送(直接)</a-button
           >
         </span>
-        <span
-          v-if="
-            formModel.approvalstatus === '15' || formModel.approvalstatus === ''
-          "
-        >
+        <span v-if="formModel.pat_status === 15">
           <a-button
             key="btnDraftApply"
             type="primary"
             :loading="btnDraftApplyLoading"
-            @click="onDraftApply"
+            @click="handlerDraftApply"
             >发送(从草稿)</a-button
           >
         </span>
-        <span v-if="formModel.approvalstatus === '11'">
+        <span v-if="formModel.pat_status === 11">
           <a-button
             key="btnReSend"
             type="primary"
             :loading="btnReSendLoading"
-            @click="onReSend"
+            @click="handlerReSend"
             >重新发起</a-button
           >
         </span>
-        <span
-          v-if="
-            formModel.approvalstatus === '15' || formModel.approvalstatus === ''
-          "
-        >
+        <span v-if="formModel.pat_status === 15 || formModel.pat_status === -1">
           <a-button
             key="btnSave"
             type="primary"
             :loading="btnSaveLoading"
-            @click="onSave"
+            @click="handlerSave"
             >暂存</a-button
           >
         </span>
-        <span v-if="formModel.approvalstatus === '13'">
+        <span v-if="formModel.pat_status === 13">
           <a-button
             key="btnWithdraw"
             type="primary"
             :loading="btnWithdrawLoading"
-            @click="onWithdraw"
+            @click="handlerWithdraw"
             >撤销申请</a-button
           >
         </span>
-        <span v-if="formModel.approvalstatus === '15'">
+        <span v-if="formModel.pat_status === 15">
           <a-button
             key="btnDelete"
             type="primary"
             :loading="btnDeleteLoading"
-            @click="onDelete"
+            @click="handlerDelete"
             >删除</a-button
           >
         </span>
-        <!-- <span v-if="formModel.approvalstatus==='15'"> -->
-        <a-button key="btnPrint" @click="onPrint">打印</a-button>
-        <!-- </span> -->
-        <a-button key="btnReset" @click="onResetForm">重置</a-button>
-        <a-button key="btnClose" @click="handleCancel">取消关闭</a-button>
+        <span v-if="formModel.pat_status === 16 || formModel.pat_status === 14">
+          <a-button key="btnPrint" @click="handlerPrint">打印</a-button>
+        </span>
+        <a-button key="btnClose" @click="handleCancel">关闭</a-button>
       </template>
       <a-spin tip="Loading..." :spinning="formSpinning">
         <!-- 
@@ -102,6 +89,14 @@
           :label-col="labelCol"
           :wrapper-col="wrapperCol"
         >
+          a:{{ formModel.pat_status }}
+          <div class="my_status_flag">
+            {{
+              $GlobalDict.Consultation.ApprovalStatus.FormatDict(
+                formModel.pat_status
+              )
+            }}
+          </div>
           <a-form-model-item label="会诊患者">
             姓名:{{ formModel.name }} 编号:{{ formModel.patientid }} 就诊号:{{
               formModel.visitid
@@ -122,10 +117,9 @@
             <a-date-picker
               v-model="formModel.applydate"
               placeholder="选择日期"
-              style="width: 250px"
             />
           </a-form-model-item>
-          <a-form-model-item label="会诊目的" prop="consultationpurpose">
+          <a-form-model-item label="会诊目的" prop="consultationpurpose" ref="consultationpurpose" :autoLink="false">
             <span>常用目的:</span>
             <a-button type="link" @click="selectCommonTarget('明确诊断')"
               >明确诊断</a-button
@@ -140,21 +134,23 @@
               v-model="formModel.consultationpurpose"
               type="textarea"
               placeholder="点击上诉常用选项 或 输入"
+              @blur="() => {$refs.consultationpurpose.onFieldBlur()}"
             />
           </a-form-model-item>
-
-          <a-form-model-item label="会诊诊断" prop="definitediagnosis">
-            <div class="certain-category-search-wrapper">
-              <a-auto-complete
-                class="global-search"
-                placeholder="请选择会诊诊断"
-                v-model="formModel.definitediagnosis"
-                :data-source="dataSourceDefinitediagnosis"
-                @search="handleSearchInDefinitediagnosis"
-              />
-            </div>
+          <a-form-model-item
+            label="会诊诊断"
+            prop="definitediagnosis"
+            has-feedback
+          >
+            <a-auto-complete
+              class="global-search"
+              placeholder="请选择会诊诊断"
+              v-model="formModel.definitediagnosis"
+              :data-source="dataSourceDefinitediagnosis"
+              @search="handleSearchInDefinitediagnosis"
+            />
           </a-form-model-item>
-          <a-form-model-item label="患者病情" prop="memo">
+          <a-form-model-item label="患者病情" prop="memo" ref="memo" :autoLink="false">
             <a-button
               type="link"
               @click="
@@ -187,9 +183,10 @@
               type="textarea"
               placeholder="请简单描述患者病情"
               style="height: 100px"
+              @blur="() => {$refs.memo.onFieldBlur()}"
             />
           </a-form-model-item>
-          <a-form-model-item label="补充患者资料" prop="region">
+          <a-form-model-item label="补充患者资料">
             <a-upload-dragger
               name="file"
               :multiple="true"
@@ -330,33 +327,45 @@
             <a-divider />
           </div>
 
-          <a-form-model-item label="会诊对象" prop="desc">
+          <a-form-model-item label="会诊对象">
             <a-tag
               style="background: #fff; borderstyle: dashed"
               @click="selectDoctorsVisible = true"
             >
               <a-icon type="plus" /> 添加对象
             </a-tag>
-            <template v-for="tag in doctors">
-              <a-tooltip v-if="tag.value.length > 20" :key="tag.key" :title="tag.vlaue">
+            <template v-for="item in formModel.clsconsultationdetaillist">
+              <a-tag
+                :key="item.key"
+                :closable="true"
+                @close="() => handleClose(item.key)"
+                color="#f50"
+              >
+                {{ item.objName }}
+              </a-tag>
+              <!-- <a-tooltip
+                v-if="item.objName.length > 20"
+                :key="item.key"
+                :title="item.objName"
+              >
                 <a-tag
-                  :key="tag.key"
+                  :key="item.key"
                   :closable="true"
-                  @close="() => handleClose(tag.key)"
+                  @close="() => handleClose(item.key)"
                   color="#f50"
                 >
-                  {{ `${tag.value.slice(0, 20)}...` }}
+                  {{ `${item.objName.slice(0, 20)}...` }}
                 </a-tag>
               </a-tooltip>
               <a-tag
                 v-else
-                :key="tag.key"
+                :key="item.key"
                 :closable="true"
-                @close="() => handleClose(tag.key)"
+                @close="() => handleClose(item.key)"
                 color="#f50"
               >
-                {{ tag.value }}
-              </a-tag>
+                {{ item.objName }}
+              </a-tag> -->
             </template>
           </a-form-model-item>
           <!--  如果一行要求多个列时，采用栅格布局       
@@ -370,7 +379,6 @@
           <a-row>
             <a-col :span="12">
               <a-form-model-item
-                ref="applydoctor"
                 label="申请医生"
                 prop="applydoctor"
                 has-feedback
@@ -381,7 +389,6 @@
             </a-col>
             <a-col :span="12">
               <a-form-model-item
-                ref="phone"
                 label="联系方式"
                 prop="phone"
                 has-feedback
@@ -412,6 +419,7 @@
     <select-doctors-modal
       ref="selectDoctorsModal"
       :visible.sync="selectDoctorsVisible"
+      :selectedKeys="selectedDoctorsKeys"
       @confirmImport="handlerConfirmImportDoctors"
     />
   </div>
@@ -457,10 +465,12 @@ export default {
       wrapperCol: { span: 14 },
 
       formModel: {
-        approvalstatus: "-1",
+        pat_status: -1,
         consultationpurpose: "",
         consultationattr: "2", //默认普通平会诊
         memo: "",
+        clsconsultationdetaillist: [], //会诊对象集
+        filelist: [], //上传文件列表
       },
 
       dict_staging_method: this.$GlobalDict.TumorStaging.StagingMethod.GetDict(),
@@ -474,10 +484,10 @@ export default {
 
       rules: {
         applydate: [
-          { required: true, message: "请选择会诊日期", trigger: "blur" },
+          { required: true, message: "请选择会诊日期", trigger: "change" },
         ],
         consultationpurpose: [
-          { required: true, message: "请填写会诊目的", trigger: "blur" },
+          { required: true, message: "请填写会诊目的"},
         ],
         definitediagnosis: [
           { required: true, message: "请选择会诊诊断", trigger: "blur" },
@@ -491,7 +501,6 @@ export default {
           { required: true, message: "请选择分期方法", trigger: "blur" },
         ],
       },
-      doctors: [],
       selectAssayVisible: false, //检验选择对话框显示
       selectExaminationVisible: false, //检验选择对话框显示
       selectDoctorsVisible: false, //会诊对象选择对话框显示
@@ -500,6 +509,23 @@ export default {
   mounted() {
     //mounted 是生命周期方法之一，会在对应生命周期时执行。
   },
+  computed: {
+    // 计算属性的 getter
+    selectedDoctorsKeys: function () {
+      let list = [];
+      if (
+        typeof this.formModel.clsconsultationdetaillist !== "undefined" &&
+        this.formModel.clsconsultationdetaillist != null
+      ) {
+        this.formModel.clsconsultationdetaillist.forEach((item) => {
+          list.push({
+            key: item.consultationdoctor,
+          });
+        });
+      }
+      return list;
+    },
+  },
   watch: {
     initData: {
       handler() {
@@ -507,7 +533,8 @@ export default {
           this.title = "创建会诊申请单";
           this.formModel = {
             ...this.formModel,
-            ...this.initData,
+            // ...this.initData,
+            pat_status: -1, //-1未创建默认值
           };
         } else {
           this.title = "修改会诊申请单";
@@ -515,6 +542,7 @@ export default {
         }
       },
       deep: true, //监听对象时，需要开启
+      immediate: true, //启动首次监听
     },
   },
   methods: {
@@ -525,8 +553,9 @@ export default {
           this.$Api.Consultation.ApplyInfo +
           "?folio=" +
           this.initData.primaryKey;
+        console.log("url=", url);
         this.$Http.AsyncPost(url).then((res) => {
-          this.formModel = res.data;          
+          this.formModel = res.data;
           this.formSpinning = false;
         });
       }
@@ -534,31 +563,36 @@ export default {
     handleCancel() {
       this.$emit("update:visible", false); //父组件里通过.sync的props变量，才能通过次方式进行修改 这里是:visible.sync
     },
-    onSave() {
+    handlerSave() {
       this.$refs.editForm.validate((valid) => {
         if (valid) {
           //验证成功
           this.btnSaveLoading = true;
-          this.formModel.PAT_STATUS = 2;
+          this.formModel.pat_status = 2;
+          let param = {
+            hdconsultation: this.formModel,
+            fileList: [],
+          };
           this.$Http
-            .AsyncPost(this.$Api.Consultation.AddApply, this.formModel)
+            .AsyncPost(this.$Api.Consultation.AddApply, param)
             .then((res) => {
               this.btnSaveLoading = false;
-              this.$message.info("暂存成功");
+              this.$message.info("发送成功");
               this.$emit("update:visible", false); //关闭对话框
               console.log(res);
             });
         } else {
-          console.log("error onSave!!");
+          console.log("error handlerSave!!");
           return false;
         }
       });
     },
-    onDraftApply() {
+    handlerDraftApply() {
       //草稿提交
       this.$refs.editForm.validate((valid) => {
+        //验证成功
         if (valid) {
-          //验证成功
+          this.formModel.patsource = "3"; //1门诊、3住院、4体检、2急诊、9其他
           this.btnDraftApplyLoading = true;
           this.$Http
             .AsyncPost(this.$Api.Consultation.DraftApply, this.formModel)
@@ -574,14 +608,18 @@ export default {
         }
       });
     },
-    onSend() {
+    handlerSend() {
       this.$refs.editForm.validate((valid) => {
         if (valid) {
           //验证成功
           this.btnSendLoading = true;
-          this.formModel.PAT_STATUS = 1;
+          this.formModel.pat_status = 1;
+          let param = {
+            hdconsultation: this.formModel,
+            fileList: [],
+          };
           this.$Http
-            .AsyncPost(this.$Api.Consultation.AddApply, this.formModel)
+            .AsyncPost(this.$Api.Consultation.AddApply, param)
             .then((res) => {
               this.btnSendLoading = false;
               this.$message.info("发送成功");
@@ -594,15 +632,15 @@ export default {
         }
       });
     },
-    onResetForm() {
+    hanllerResetForm() {
       this.$refs.editForm.resetFields();
     },
-    btnDelete() {
+    handlerDelete() {
       this.$refs.editForm.validate((valid) => {
         if (valid) {
           //验证成功
           this.btnDeleteLoading = true;
-          this.formModel.PAT_STATUS = 2;
+          this.formModel.pat_status = 2;
           this.$Http
             .AsyncPost(this.$Api.Consultation, this.formModel)
             .then((res) => {
@@ -617,12 +655,12 @@ export default {
         }
       });
     },
-    btnWithdraw() {
+    handlerWithdraw() {
       this.$refs.editForm.validate((valid) => {
         if (valid) {
           //验证成功
           this.btnWithdrawLoading = true;
-          this.formModel.PAT_STATUS = 2;
+          this.formModel.pat_status = 2;
           this.$Http
             .AsyncPost(this.$Api.Consultation, this.formModel)
             .then((res) => {
@@ -637,12 +675,12 @@ export default {
         }
       });
     },
-    btnReSend() {
+    handlerReSend() {
       this.$refs.editForm.validate((valid) => {
         if (valid) {
           //验证成功
           this.btnReSendLoading = true;
-          this.formModel.PAT_STATUS = 2;
+          this.formModel.pat_status = 2;
           this.$Http
             .AsyncPost(this.$Api.Consultation, this.formModel)
             .then((res) => {
@@ -657,13 +695,13 @@ export default {
         }
       });
     },
-    onPrint() {
+    handlerPrint() {
       console.log("print=");
       console.log("formModel=", this.formModel);
       this.loading = true;
       setTimeout(() => {
         this.loading = false;
-        this.$message.info("onPrint");
+        this.$message.info("handlerPrint");
       }, 3000);
     },
     selectCommonTarget(val) {
@@ -691,8 +729,10 @@ export default {
       selects.forEach((item) => {
         tmp.push(
           `检查项:${item.resultitemname}   |    值:${item.result}   |    单位:${item.unit}   |    参考:${item.normalresult}\n`
-        );        
-        tmp.push("----------------------------------------------------------------------\n");
+        );
+        tmp.push(
+          "----------------------------------------------------------------------\n"
+        );
       });
       this.formModel.memo += tmp;
     },
@@ -700,13 +740,33 @@ export default {
       let tmp = [];
       selects.forEach((item) => {
         tmp.push(`\n============== {${item.item}}检验结果  ==============\n`);
-        tmp.push(item.value);       
+        tmp.push(item.value);
       });
-      tmp.push("\n----------------------------------------------------------------------\n");
+      tmp.push(
+        "\n----------------------------------------------------------------------\n"
+      );
       this.formModel.memo += tmp;
     },
     handlerConfirmImportDoctors(doctors) {
-      this.doctors=doctors
+      // consultationdept:会诊医生所在部门，专家组和科室不用传
+      // consultationdoctor:会诊对象id
+      // consultationreceivedoctor:会诊对象id
+      // receivetype:会诊对象类型 1:科室 2:用户 3:专家组
+      let objs = [];
+      doctors.forEach((item) => {
+        objs.push({
+          key: item.key,
+          objName: item.value,
+          consultationdoctor: item.id,
+          consultationreceivedoctor: item.id,
+          consultationdept: item.deptCode,
+          receivetype: item.type, //配音首字母
+          patientid: this.formModel.patientid,
+          visitid: this.formModel.visitid,
+        });
+      });
+      console.log("clsconsultationdetaillist=", objs);
+      this.formModel.clsconsultationdetaillist = objs;
     },
     handleSearchInDefinitediagnosis(value) {
       //会诊诊断 模糊搜索
@@ -731,5 +791,17 @@ export default {
 <style>
 .ant-modal-footer button {
   margin-left: 8px;
+}
+.my_status_flag {
+  background: #ccc;
+  color: #08979c;
+  font-weight: bold;
+  float: right;
+  border-radius: 30px;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

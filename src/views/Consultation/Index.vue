@@ -102,6 +102,7 @@ export default {
           name:res.data.name,//患者姓名
           visitid:res.data.visitid,//就诊主键
           diagnosis:res.data.diagnosis,//患者主诊断
+          applydoctor:this.$GlobalData.LoginUserInfo.username,
         }
         console.log('formInitData=',formInitData)
         this.$refs.apply_table.openEditForm(formInitData)
