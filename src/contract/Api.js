@@ -17,7 +17,8 @@ export default {
         ApprovalApply: '/OrderTreat/ApprovalApply',//审核会诊申请单
         ApplyInfo: '/OrderTreat/BPMConsulApplyInfo',//获取详细信息
         ApplyList: '/OrderTreat/BPMGetConsultationApplyList',//获取我发起流程记录列表
-        ApprovalList: '/OrderTreat/BPMGetConsultationApprovalList',//获取我发起流程记录列表
+        ApprovalList: '/OrderTreat/BPMGetConsultationApprovalList',//获取我审批记录列表
+        DraftList: '/OrderTreat/BPMGetConsultationStatusList',//获取草稿的列表
     },
     Patient:{
         GetInPatBasicInfo:'/PatientService/GetInPatBasicInfo',//查询在院病人的基本信息
@@ -29,7 +30,8 @@ export default {
         /**
          * 查询字典文件根据Code类别查询子项递归
          */
-        GetWidgetDict:'/DictAdminService/GetWidgetDictSonRecursion',//查询字典文件根据Code类别查询子项递归
+        GetWidgetDict:'/DictAdminService/GetWidgetDictSon',//查询字典文件根据Code类别查询子项递归 
+        GetWidgetDictRecursion:'/DictAdminService/GetWidgetDictSonRecursion',//查询字典文件根据Code类别查询子项递归 
         SerchCodeConfig:'/DictAdminService/GetSerchCodeConfig',//根据字典标识获取字典文件
         GetCodeConfig:'/DictAdminService/GetCodeConfig',//根据字典标识获取字典文件
         GetStaffList:'/DoctorAdminService/GetStaffList',//查询工作人员信息

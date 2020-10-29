@@ -23,7 +23,7 @@ axios.interceptors.request.use(config => {
     if(typeof(globalData.LoginUserInfo) !== 'undefined'){
         config.headers['Access-Token'] = globalData.AccessToken; 
         config.headers['dbuser'] = globalData.LoginUserInfo.dbuser; 
-        config.headers['username'] = globalData.LoginUserInfo.username; 
+        config.headers['username'] = encodeURIComponent(globalData.LoginUserInfo.username); 
         config.headers['userid'] = globalData.LoginUserInfo.userid; 
         config.headers['hospitalid'] = globalData.LoginUserInfo.hospitalid; 
     }
@@ -101,7 +101,7 @@ jquery.ajaxSetup({
             //可以设置自定义标头
             xhr.setRequestHeader('Access-Token',globalData.AccessToken );
             xhr.setRequestHeader('dbuser', globalData.LoginUserInfo.dbuser);
-            xhr.setRequestHeader('username', globalData.LoginUserInfo.username);
+            xhr.setRequestHeader('username',encodeURIComponent(globalData.LoginUserInfo.username));
             xhr.setRequestHeader('userid', globalData.LoginUserInfo.userid);
             xhr.setRequestHeader('hospitalid',globalData.LoginUserInfo.hospitalid );
         }

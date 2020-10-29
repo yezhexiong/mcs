@@ -28,11 +28,17 @@
     ref="editForm"
     :visible.sync="editFormVisible"
     :init-data="formInitData"
-  />  
+  />
+  <!-- <view-form
+    ref="viewForm"
+    :visible.sync="viewFormVisible"
+    :init-data="formInitData"
+  />   -->
 </div>
 </template>
 <script>
 import editForm from '@/views/Consultation/EditForm'
+// import viewForm from '@/views/Consultation/ViewForm'
 
 const columns = [
   { title: '床号', width: 60, dataIndex: 'bedlabel', key: 'bedlabel', fixed: 'left' },
@@ -61,6 +67,7 @@ const data = [];
 export default {
   components: {
     editForm,
+    // viewForm,
   },
   props: {//组件入参数定义,入参数参数不允许修改 定义props参数后调用，调用时就可以这样使用 :title="xxxx" 或 title="xxxx"
     queryParam: {},// 查询参数
@@ -73,6 +80,7 @@ export default {
       pagination:{hideOnSinglePage:true,pageSize:10000},//hideOnSinglePage 只有页则不显示分页控件
       loading: true,
       editFormVisible: false,
+      // viewFormVisible:false,
       formInitData:{},
     };
   },
@@ -138,6 +146,7 @@ export default {
     /**  */
     openEditForm(obj={}) {
       this.editFormVisible = true;
+      // this.viewFormVisible = true;
       this.formInitData=obj;
     },
     

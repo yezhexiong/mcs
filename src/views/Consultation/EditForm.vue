@@ -10,7 +10,7 @@
       :title="title"
       centered
       width="900px"
-      @cancel="handleCancel"
+      @cancel="handlerCancel"
     >
       <!-- 对话框自定义按钮 -->
       <template slot="footer">
@@ -24,7 +24,7 @@
             >发送(直接)</a-button
           >
         </span>
-        <span v-if="formModel.pat_status === 15">
+        <span v-if="formModel.pat_status === 2">
           <a-button
             key="btnDraftApply"
             type="primary"
@@ -72,7 +72,7 @@
         <span v-if="formModel.pat_status === 16 || formModel.pat_status === 14">
           <a-button key="btnPrint" @click="handlerPrint">打印</a-button>
         </span>
-        <a-button key="btnClose" @click="handleCancel">关闭</a-button>
+        <a-button key="btnClose" @click="handlerCancel">关闭</a-button>
       </template>
       <a-spin tip="Loading..." :spinning="formSpinning">
         <!-- 
@@ -84,8 +84,8 @@
         -->
         <a-form-model
           ref="editForm"
-          :model="formModel"
           :rules="rules"
+          :model="formModel"
           :label-col="labelCol"
           :wrapper-col="wrapperCol"
         >
@@ -119,23 +119,46 @@
               placeholder="选择日期"
             />
           </a-form-model-item>
-          <a-form-model-item label="会诊目的" prop="consultationpurpose" ref="consultationpurpose" :autoLink="false">
+          <a-form-model-item
+            label="会诊目的"
+            prop="consultationpurpose"
+            ref="consultationpurpose"
+            :autoLink="false"
+          >
             <span>常用目的:</span>
-            <a-button type="link" @click="selectCommonTarget('明确诊断')"
-              >明确诊断</a-button
-            >
-            <a-button type="link" @click="selectCommonTarget('用药指导')"
-              >用药指导</a-button
-            >
-            <a-button type="link" @click="selectCommonTarget('治疗效果评价')"
-              >治疗效果评价</a-button
-            >
+              <span
+                v-for="item in $GlobalDict.Consultation.ConsultationPurpose.GetDict()" :key="item.message"
+              >
+                <a-button type="link" @click="selectCommonTarget(item.label)"
+                  >{{ item.label }}
+                </a-button>
+              </span>
             <a-input
               v-model="formModel.consultationpurpose"
               type="textarea"
               placeholder="点击上诉常用选项 或 输入"
-              @blur="() => {$refs.consultationpurpose.onFieldBlur()}"
+              @blur="
+                () => {
+                  $refs.consultationpurpose.onFieldBlur();
+                }
+              "
             />
+            <!--  
+             Form.Item 会对唯一子元素进行劫持，并监听 blur 和 change 事件，来达到自动校验的目的，所以请确保表单域没有其它元素包裹。如果有多个子元素，将只会监听第一个子元素的变化。
+              如果要监听的表单域不满足自动监听的条件，可以通过如下方式关联表单域：
+              <a-form-model-item prop='form.name' ref='name' :autoLink='false'>
+                <a-input v-model='other' />
+                <span>hahha</span>
+                <div>
+                  <a-input
+                    v-model='form.name'
+                    @blur='() => {$refs.name.onFieldBlur()}'
+                    @change='() => {$refs.name.onFieldChange()}'
+                  />
+                </div>
+              </a-form-model-item>
+              详见:[https://www.antdv.com/components/form-model-cn/]
+              -->
           </a-form-model-item>
           <a-form-model-item
             label="会诊诊断"
@@ -150,12 +173,17 @@
               @search="handleSearchInDefinitediagnosis"
             />
           </a-form-model-item>
-          <a-form-model-item label="患者病情" prop="memo" ref="memo" :autoLink="false">
+          <a-form-model-item
+            label="患者病情"
+            prop="memo"
+            ref="memo"
+            :autoLink="false"
+          >
             <a-button
               type="link"
               @click="
                 () => {
-                  $refs.name.onFieldBlur();
+                  $refs.memo.onFieldBlur();
                 }
               "
               >导入病情</a-button
@@ -183,7 +211,11 @@
               type="textarea"
               placeholder="请简单描述患者病情"
               style="height: 100px"
-              @blur="() => {$refs.memo.onFieldBlur()}"
+              @blur="
+                () => {
+                  $refs.memo.onFieldBlur();
+                }
+              "
             />
           </a-form-model-item>
           <a-form-model-item label="补充患者资料">
@@ -205,122 +237,68 @@
             <a-row>
               <a-col :span="12">
                 <a-form-model-item
-                  ref="staging_method"
                   label="分期方法"
                   prop="staging_method"
                   :label-col="labelCol2"
                 >
                   <a-select
+                    :options="$GlobalDict.TumorStaging.StagingMethod.GetDict()"
                     v-model="formModel.staging_method"
                     placeholder="请选分期方法"
-                  >
-                    <!-- <a-select-option v-for="(item,index)  in dict_staging_method" :key="index" :value="item.dict_code"  >{{item.dict_value}}</a-select-option>  -->
-                    <a-select-option
-                      v-for="item1 in dict_staging_method"
-                      :key="item1.dict_value"
-                      :value="item1.dict_code"
-                      >{{ item1.dict_value }}</a-select-option
-                    >
-                  </a-select>
+                  />
                 </a-form-model-item>
               </a-col>
               <a-col :span="12">
                 <a-form-model-item
-                  ref="classification_stages"
                   label="类别"
+                  prop="classification_stages"
                   :label-col="labelCol2"
                 >
                   <a-select
                     v-model="formModel.classification_stages"
+                    :options="dict_ClassificationStages"
                     placeholder="请选类别"
-                  >
-                    <a-select-option
-                      v-for="item2 in dict_classification_stages"
-                      :key="item2.dict_value"
-                      :value="item2.dict_code"
-                      >{{ item2.dict_value }}</a-select-option
-                    >
-                  </a-select>
+                  />
                 </a-form-model-item>
               </a-col>
             </a-row>
             <a-row>
               <a-col :span="12">
-                <a-form-model-item
-                  ref="primary_tumor"
-                  label="原发肿瘤"
-                  :label-col="labelCol2"
-                >
+                <a-form-model-item label="原发肿瘤" :label-col="labelCol2">
                   <a-select
                     v-model="formModel.primary_tumor"
+                    :options="$GlobalDict.TumorStaging.PrimaryTumor.GetDict()"
                     placeholder="请选原发肿瘤"
-                  >
-                    <a-select-option
-                      v-for="item3 in dict_primary_tumor"
-                      :key="item3.dict_value"
-                      :value="item3.dict_code"
-                      >{{ item3.dict_value }}</a-select-option
-                    >
-                  </a-select>
+                  />
                 </a-form-model-item>
               </a-col>
               <a-col :span="12">
-                <a-form-model-item
-                  ref="lymph_metastasis"
-                  label="淋巴结转移"
-                  :label-col="labelCol2"
-                >
+                <a-form-model-item label="淋巴结转移" :label-col="labelCol2">
                   <a-select
                     v-model="formModel.lymph_metastasis"
+                    :options="$GlobalDict.TumorStaging.LymphMetastasis.GetDict()"
                     placeholder="请选择淋巴结转移"
-                  >
-                    <a-select-option
-                      v-for="item4 in dict_lymph_metastasis"
-                      :key="item4.dict_value"
-                      :value="item4.dict_code"
-                      >{{ item4.dict_value }}</a-select-option
-                    >
-                  </a-select>
+                  />
                 </a-form-model-item>
               </a-col>
             </a-row>
             <a-row>
               <a-col :span="12">
-                <a-form-model-item
-                  ref="distant_metastasis"
-                  label="远处转移"
-                  :label-col="labelCol2"
-                >
+                <a-form-model-item label="远处转移" :label-col="labelCol2">
                   <a-select
                     v-model="formModel.distant_metastasis"
+                    :options="$GlobalDict.TumorStaging.DistantMetastasis.GetDict()"
                     placeholder="请选择远处转移"
-                  >
-                    <a-select-option
-                      v-for="item5 in dict_distant_metastasis"
-                      :key="item5.dict_value"
-                      :value="item5.dict_code"
-                      >{{ item5.dict_value }}</a-select-option
-                    >
-                  </a-select>
+                  />
                 </a-form-model-item>
               </a-col>
               <a-col :span="12">
-                <a-form-model-item
-                  ref="by_stages"
-                  label="分期"
-                  :label-col="labelCol2"
-                >
+                <a-form-model-item label="分期" :label-col="labelCol2">
                   <a-select
                     v-model="formModel.by_stages"
+                    :options="$GlobalDict.TumorStaging.ByStages.GetDict()"
                     placeholder="请选择分期"
-                  >
-                    <a-select-option
-                      v-for="item6 in dict_by_stages"
-                      :key="item6.dict_value"
-                      :value="item6.dict_code"
-                      >{{ item6.dict_value }}</a-select-option
-                    >
-                  </a-select>
+                  />
                 </a-form-model-item>
               </a-col>
             </a-row>
@@ -341,7 +319,7 @@
                 @close="() => handleClose(item.key)"
                 color="#f50"
               >
-                {{ item.objName }}
+                {{ item.objName + "(" + item.consultationdept + ")" }}
               </a-tag>
               <!-- <a-tooltip
                 v-if="item.objName.length > 20"
@@ -437,9 +415,9 @@ export default {
           isCreat: false, //是否创建
           primaryKey: 0, //如果不是创建，则需要传递主键值
           patientId: "", //患者主键
-          patientName: "叶哲雄", //患者姓名
-          patientVisitId: "001", //就诊主键
-          patientDiagnosis: "小感冒", //患者主诊断
+          patientName: "", //患者姓名
+          patientVisitId: "", //就诊主键
+          patientDiagnosis: "", //患者主诊断
         };
       },
     },
@@ -457,38 +435,21 @@ export default {
       btnReSendLoading: false,
       btnWithdrawLoading: false,
       btnDeleteLoading: false,
-
       formSpinning: false, //表单加载状态
 
       labelCol: { span: 4 },
       labelCol2: { span: 8 },
       wrapperCol: { span: 14 },
 
-      formModel: {
-        pat_status: -1,
-        consultationpurpose: "",
-        consultationattr: "2", //默认普通平会诊
-        memo: "",
-        clsconsultationdetaillist: [], //会诊对象集
-        filelist: [], //上传文件列表
-      },
-
-      dict_staging_method: this.$GlobalDict.TumorStaging.StagingMethod.GetDict(),
-      dict_classification_stages: this.$GlobalDict.TumorStaging.ClassificationStages.GetDict(),
-      dict_lymph_metastasis: this.$GlobalDict.TumorStaging.LymphMetastasis.GetDict(),
-      dict_primary_tumor: this.$GlobalDict.TumorStaging.PrimaryTumor.GetDict(),
-      dict_distant_metastasis: this.$GlobalDict.TumorStaging.DistantMetastasis.GetDict(),
-      dict_by_stages: this.$GlobalDict.TumorStaging.ByStages.GetDict(),
-
+      formModel: {},
+      dict_ClassificationStages :this.$GlobalDict.TumorStaging.ClassificationStages.GetDict(),
       dataSourceDefinitediagnosis: [], //会诊诊断数据源
 
       rules: {
         applydate: [
-          { required: true, message: "请选择会诊日期", trigger: "change" },
+          { required: true, message: "请选择会诊日期", trigger: "change" },//date-picker 控件需要用change
         ],
-        consultationpurpose: [
-          { required: true, message: "请填写会诊目的"},
-        ],
+        consultationpurpose: [{ required: true, message: "请填写会诊目的" }],
         definitediagnosis: [
           { required: true, message: "请选择会诊诊断", trigger: "blur" },
         ],
@@ -500,7 +461,11 @@ export default {
         staging_method: [
           { required: true, message: "请选择分期方法", trigger: "blur" },
         ],
+        classification_stages: [
+          { required: true, message: "请选择类别", trigger: "blur" },
+        ],
       },
+
       selectAssayVisible: false, //检验选择对话框显示
       selectExaminationVisible: false, //检验选择对话框显示
       selectDoctorsVisible: false, //会诊对象选择对话框显示
@@ -531,21 +496,49 @@ export default {
       handler() {
         if (this.initData.isCreat) {
           this.title = "创建会诊申请单";
-          this.formModel = {
-            ...this.formModel,
-            // ...this.initData,
-            pat_status: -1, //-1未创建默认值
-          };
+          this.initFormData();
+          // this.formModel = {
+          //   ...this.initData,
+          //   pat_status: -1, //-1未创建默认值
+          //   // consultationpurpose:'',//???不知道为什么，这里不初始化，点击常用会诊目的会卡死
+          // };
+          console.log("this.formModel=", this.formModel);
         } else {
           this.title = "修改会诊申请单";
+          console.log('run EditForm.loadData();')
           this.loadData();
         }
       },
       deep: true, //监听对象时，需要开启
-      immediate: true, //启动首次监听
+      // immediate: true, //启动首次监听
     },
   },
   methods: {
+    initFormData() {
+      this.formModel = {
+        consultationpurpose: "",
+        applydoctor: "",
+        applydoctorCode: "",
+        definitediagnosis: "",
+        consultationattr: "2", //默认普通平会诊
+        memo: "",
+        phone: "",
+        clsconsultationdetaillist: [], //会诊对象集
+        filelist: [], //上传文件列表
+        applydate: null,
+        pat_status: -1,
+      };
+      console.log("initFormData=>this.formModel:", this.formModel);
+      this.formModel.patientId = this.initData.patientId;
+      this.formModel.visitId = this.initData.patientVisitId;
+      this.formModel.patientName = this.initData.patientName;
+      this.formModel.diagnosis = this.initData.patientDiagnosis; //患者主诊断
+      this.formModel.applydoctor = this.$GlobalData.LoginUserInfo.username;
+      this.formModel.applydoctorCode = this.$GlobalData.LoginUserInfo.userid;
+      this.formModel.applydeptcode = this.$GlobalData.LoginUserInfo.applydeptcode;
+      this.formModel.hospitalcode = this.$GlobalData.LoginUserInfo.hospitalcode;
+      console.log("initFormData=>this.formModel2:", this.formModel);
+    },
     loadData() {
       if (this.initData.primaryKey !== 0) {
         this.formSpinning = true;
@@ -553,16 +546,24 @@ export default {
           this.$Api.Consultation.ApplyInfo +
           "?folio=" +
           this.initData.primaryKey;
-        console.log("url=", url);
         this.$Http.AsyncPost(url).then((res) => {
           this.formModel = res.data;
           this.formSpinning = false;
         });
       }
     },
-    handleCancel() {
+    handlerCancel() {
+      // console.log(">>> handlerCancel:");
+      // console.log("this.$refs.staging_method=", this.$refs.staging_method);
+      // console.log("this.$refs.staging_method.$props.value=", this.$refs.staging_method.$props.value);
+      // console.log(
+      //   "this.$refs.staging_method.$options.propsData.value=",//this.$refs.staging_method.$props.value.lable
+      //   this.$refs.staging_method.$options.propsData.value
+      // );
+
       this.$emit("update:visible", false); //父组件里通过.sync的props变量，才能通过次方式进行修改 这里是:visible.sync
     },
+    /** 保存草稿 */
     handlerSave() {
       this.$refs.editForm.validate((valid) => {
         if (valid) {
@@ -577,37 +578,18 @@ export default {
             .AsyncPost(this.$Api.Consultation.AddApply, param)
             .then((res) => {
               this.btnSaveLoading = false;
-              this.$message.info("发送成功");
+              this.$message.info("保存草稿成功");
               this.$emit("update:visible", false); //关闭对话框
               console.log(res);
             });
         } else {
+          this.$message.error("保存草稿失败");
           console.log("error handlerSave!!");
           return false;
         }
       });
     },
-    handlerDraftApply() {
-      //草稿提交
-      this.$refs.editForm.validate((valid) => {
-        //验证成功
-        if (valid) {
-          this.formModel.patsource = "3"; //1门诊、3住院、4体检、2急诊、9其他
-          this.btnDraftApplyLoading = true;
-          this.$Http
-            .AsyncPost(this.$Api.Consultation.DraftApply, this.formModel)
-            .then((res) => {
-              this.btnDraftApplyLoading = false;
-              this.$message.info("发送成功（从草稿状态)");
-              this.$emit("update:visible", false);
-              console.log(res);
-            });
-        } else {
-          console.log("error onDraftApply!!");
-          return false;
-        }
-      });
-    },
+    /** 直接发送 */
     handlerSend() {
       this.$refs.editForm.validate((valid) => {
         if (valid) {
@@ -628,6 +610,27 @@ export default {
             });
         } else {
           console.log("error onSend!!");
+          return false;
+        }
+      });
+    },
+    /** 草稿提交 */
+    handlerDraftApply() {
+      this.$refs.editForm.validate((valid) => {
+        //验证成功
+        if (valid) {
+          this.formModel.patsource = "3"; //1门诊、3住院、4体检、2急诊、9其他
+          this.btnDraftApplyLoading = true;
+          this.$Http
+            .AsyncPost(this.$Api.Consultation.DraftApply, this.formModel)
+            .then((res) => {
+              this.btnDraftApplyLoading = false;
+              this.$message.info("发送成功（从草稿状态)");
+              this.$emit("update:visible", false);
+              console.log(res);
+            });
+        } else {
+          console.log("error onDraftApply!!");
           return false;
         }
       });
@@ -696,8 +699,9 @@ export default {
       });
     },
     handlerPrint() {
-      console.log("print=");
+      console.log("> handlerPrint");
       console.log("formModel=", this.formModel);
+
       this.loading = true;
       setTimeout(() => {
         this.loading = false;
@@ -705,7 +709,12 @@ export default {
       }, 3000);
     },
     selectCommonTarget(val) {
-      this.formModel.consultationpurpose += val + ";    ";
+      let tmpTxt = "";
+      if (typeof this.formModel.consultationpurpose != "undefined") {
+        tmpTxt = this.formModel.consultationpurpose;
+      }
+      tmpTxt += val + ";    ";
+      this.formModel.consultationpurpose = tmpTxt;
     },
     uploadFiles(info) {
       const status = info.file.status;
@@ -747,6 +756,7 @@ export default {
       );
       this.formModel.memo += tmp;
     },
+    /** 导入会诊对象 */
     handlerConfirmImportDoctors(doctors) {
       // consultationdept:会诊医生所在部门，专家组和科室不用传
       // consultationdoctor:会诊对象id
@@ -761,8 +771,8 @@ export default {
           consultationreceivedoctor: item.id,
           consultationdept: item.deptCode,
           receivetype: item.type, //配音首字母
-          patientid: this.formModel.patientid,
-          visitid: this.formModel.visitid,
+          patientid: this.formModel.patientId,
+          visitid: this.formModel.visitId,
         });
       });
       console.log("clsconsultationdetaillist=", objs);

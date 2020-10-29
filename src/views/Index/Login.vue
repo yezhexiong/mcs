@@ -83,7 +83,7 @@ export default {
 
         //因为登录暂未实现，则先写死
         this.$GlobalData.AccessToken = "4ec1dac6-f0a4-4b3e-bf94-aa60b18148fe";
-        this.$GlobalData.LoginUserInfo = {"dbuser":"000324","username":"000324","userid":"000324","hospitalid":"1000000"}
+        this.$GlobalData.LoginUserInfo = {"dbuser":"000324","username":"朱医生","userid":"000324","applydeptcode":"2022","hospitalid":"1000000","hospitalcode":"1000000"}
         
         console.log(resData)
         if(resData.passed){
