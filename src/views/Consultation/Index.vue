@@ -7,9 +7,9 @@
       <a-tab-pane key="approval-list" tab="审核会诊">
         <approval-list :queryParam="approvalQueryParam" ref="approval_list"></approval-list>
       </a-tab-pane>
-      <a-tab-pane key="draft-list" tab="我的草稿">
+      <!-- <a-tab-pane key="draft-list" tab="我的草稿">
         <draft-list :queryParam="draftQueryParam" ref="draft_list" />
-      </a-tab-pane>
+      </a-tab-pane> -->
       <div slot="tabBarExtraContent" style="margin-top: 2px">
         <a-form-model layout="inline">
           <div v-if="curlTab==='apply-list'">
@@ -79,7 +79,7 @@
               </a-select>
             </a-form-model-item>
           </div>
-          <div v-if="curlTab==='draft-list'">
+          <!-- <div v-if="curlTab==='draft-list'">
             <a-form-model-item label="会诊时间:">
               <a-range-picker :style="{width:'200px'}" v-model="draftQueryParam.applyDateRegion"/>
             </a-form-model-item>
@@ -90,7 +90,7 @@
                 <a-select-option value="2">草稿要重新发起流程</a-select-option>
               </a-select>
             </a-form-model-item>
-          </div>
+          </div> -->
         </a-form-model>
       </div>
     </a-tabs>
@@ -99,12 +99,12 @@
 <script>
 import ApplyList from '@/views/Consultation/ApplyList'
 import ApprovalList from '@/views/Consultation/ApprovalList'
-import DraftList from '@/views/Consultation/DraftList'
+// import DraftList from '@/views/Consultation/DraftList'
 export default {
   components: {
     ApplyList,
     ApprovalList,
-    DraftList,
+    // DraftList,
   },
   methods: {
     tabClick(key){
@@ -112,7 +112,7 @@ export default {
       switch(key){
         case "apply-list":{ this.applyQueryParam.refreshTime = new Date(); break}//通过更新参数（任意参数）来刷新列表
         case "approval-list":{ this.approvalQueryParam.refreshTime = new Date(); break}
-        case "draft-list":{ this.draftQueryParam.refreshTime = new Date(); break}
+        // case "draft-list":{ this.draftQueryParam.refreshTime = new Date(); break}
         
       }
     },
@@ -167,12 +167,12 @@ export default {
         "apprrovaluser":this.$GlobalData.LoginUserInfo.dbuser,//审批用户
         "refreshTime":"",
       },
-      draftQueryParam: {// 审核会诊查询参数
-        "applyDateRegion":[this.$GlobalFunc.moment().subtract(1, 'weeks'),this.$GlobalFunc.moment().endOf('day')],//此字段接口不需要，是控件需要，接口所需参数是starttime,endtime，在后面处理        
-        "applyuser":this.$GlobalData.LoginUserInfo.dbuser,//申请用户
-        "patStatus":1,//1已申请，2草稿流程,草稿要重新发起流程
-        "refreshTime":"",
-      },
+      // draftQueryParam: {// 审核会诊查询参数
+      //   "applyDateRegion":[this.$GlobalFunc.moment().subtract(1, 'weeks'),this.$GlobalFunc.moment().endOf('day')],//此字段接口不需要，是控件需要，接口所需参数是starttime,endtime，在后面处理        
+      //   "applyuser":this.$GlobalData.LoginUserInfo.dbuser,//申请用户
+      //   "patStatus":1,//1已申请，2草稿流程,草稿要重新发起流程
+      //   "refreshTime":"",
+      // },
       curlTab:"apply-list",//当前tab页面
     }
   }
