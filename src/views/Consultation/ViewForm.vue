@@ -75,146 +75,39 @@
         <a-button key="btnClose" @click="handlerCancel">关闭</a-button>
       </template>
       <a-spin tip="Loading..." :spinning="formSpinning">
-        <!-- 
-          ref="editForm"  组件引用 可this.$refs.editForm调用组件相关资源
-          :model="formModel" 表单数据对象
-          :rules="rules"  表单验证规则
-          :label-col="labelCol"
-          :wrapper-col="wrapperCol"
-        -->
-        <a-form-model
-          ref="editForm"
-          :model="formModel"
-          :label-col="labelCol"
-          :wrapper-col="wrapperCol"
-        >
-          a:{{ formModel.pat_status }}
-          <div class="my_status_flag">
-            {{
+          <a-descriptions title="User Info">
+            <a-descriptions-item label="会诊状态">
               $GlobalDict.Consultation.ApprovalStatus.FormatDict(
                 formModel.pat_status
               )
-            }}
-          </div>
-          <a-form-model-item label="会诊患者">
-            姓名:{{ formModel.name }} 编号:{{ formModel.patientid }} 就诊号:{{
+            </a-descriptions-item>
+            <a-descriptions-item label="会诊患者">
+               姓名:{{ formModel.name }} 编号:{{ formModel.patientid }} 就诊号:{{
               formModel.visitid
             }}
-          </a-form-model-item>
-          <a-form-model-item ref="consultationattr" label="会诊类型" required>
-            <a-radio-group
-              default-value="2"
-              button-style="solid"
-              v-model="formModel.consultationattr"
-            >
-              <a-radio-button value="2"> 普通-平会诊 </a-radio-button>
-              <a-radio-button value="1"> 普通-急会诊 </a-radio-button>
-              <a-radio-button value="3"> MDT会诊 </a-radio-button>
-            </a-radio-group>
-          </a-form-model-item>
-          <a-form-model-item label="会诊时间" prop="applydate">
-            {{formModel.applydate}}
-          </a-form-model-item>
-          <a-form-model-item label="会诊目的">
-            {{formModel.consultationpurpose}}
-          </a-form-model-item>
-          <a-form-model-item
-            label="会诊诊断"
-          >
-            {{formModel.definitediagnosis}}
-          </a-form-model-item>
-          <a-form-model-item label="患者病情" >
-           {{formModel.memo}}
-          </a-form-model-item>
-          <a-form-model-item label="补充患者资料">
-           
-          </a-form-model-item>
-          <div v-if="formModel.consultationattr === '3'">
+            </a-descriptions-item>
+            <a-descriptions-item label="会诊类型">
+              {{formModel.consultationattr}}
+            </a-descriptions-item>
+            <a-descriptions-item label="会诊时间">{{formModel.applydate}}</a-descriptions-item>
+            <a-descriptions-item label="会诊目的"> {{formModel.consultationpurpose}}</a-descriptions-item>
+            <a-descriptions-item label="会诊诊断"> {{formModel.definitediagnosis}}</a-descriptions-item>
+            <a-descriptions-item label="患者病情">{{formModel.memo}}</a-descriptions-item>
+            <a-descriptions-item label="补充患者资料"></a-descriptions-item>
+            <div v-if="formModel.consultationattr === '3'">
             <a-divider orientation="left">肿瘤分期</a-divider>
-            <a-row>
-              <a-col :span="12">
-                <a-form-model-item
-                  label="分期方法"
-                  :label-col="labelCol2"
-                >
-                  {{formModel.staging_method}}
-                </a-form-model-item>
-              </a-col>
-              <a-col :span="12">
-                <a-form-model-item
-                  ref="classification_stages"
-                  label="类别"
-                  :label-col="labelCol2"
-                >
-                  {{formModel.classification_stages}}
-                </a-form-model-item>
-              </a-col>
-            </a-row>
-            <a-row>
-              <a-col :span="12">
-                <a-form-model-item
-                  ref="primary_tumor"
-                  label="原发肿瘤"
-                  :label-col="labelCol2"
-                >
-                  {{formModel.primary_tumor}}
-                </a-form-model-item>
-              </a-col>
-              <a-col :span="12">
-                <a-form-model-item
-                  ref="lymph_metastasis"
-                  label="淋巴结转移"
-                  :label-col="labelCol2"
-                >
-                  {{formModel.lymph_metastasis}}
-                </a-form-model-item>
-              </a-col>
-            </a-row>
-            <a-row>
-              <a-col :span="12">
-                <a-form-model-item
-                  ref="distant_metastasis"
-                  label="远处转移"
-                  :label-col="labelCol2"
-                >
-                  {{formModel.distant_metastasis}}
-                </a-form-model-item>
-              </a-col>
-              <a-col :span="12">
-                <a-form-model-item
-                  ref="by_stages"
-                  label="分期"
-                  :label-col="labelCol2"
-                >
-                  {{formModel.by_stages}}
-                </a-form-model-item>
-              </a-col>
-            </a-row>
+            <a-descriptions-item label="分期方法">{{formModel.staging_method}}</a-descriptions-item>
+            <a-descriptions-item label="类别"> {{formModel.classification_stages}}</a-descriptions-item>
+            <a-descriptions-item label="原发肿瘤">{{formModel.primary_tumor}}</a-descriptions-item>
+            <a-descriptions-item label="淋巴结转移">{{formModel.lymph_metastasis}}</a-descriptions-item>
+            <a-descriptions-item label="远处转移">{{formModel.distant_metastasis}}</a-descriptions-item>
+            <a-descriptions-item label="分期">{{formModel.by_stages}}</a-descriptions-item>
             <a-divider />
-          </div>
-
-          <a-form-model-item label="会诊对象">
-            {{selectedDoctorsKeys}}
-          </a-form-model-item>
-          <a-row>
-            <a-col :span="12">
-              <a-form-model-item
-                label="申请医生"
-                :label-col="labelCol2"
-              >
-                {{formModel.applydoctor}}
-              </a-form-model-item>
-            </a-col>
-            <a-col :span="12">
-              <a-form-model-item
-                label="联系方式"
-                :label-col="labelCol2"
-              >
-               {{formModel.phone}}
-              </a-form-model-item>
-            </a-col>
-          </a-row>
-        </a-form-model>
+            </div>
+            <a-descriptions-item label="会诊对象">{{selectedDoctorsKeys}}</a-descriptions-item>
+            <a-descriptions-item label="申请医生"> {{formModel.applydoctor}}</a-descriptions-item>
+            <a-descriptions-item label="联系方式">{{formModel.phone}}</a-descriptions-item>
+          </a-descriptions>
       </a-spin>
     </a-modal>
   </div>
@@ -259,7 +152,6 @@ export default {
       wrapperCol: { span: 14 },
 
       formModel: {},
-
     };
   },
   mounted() {
@@ -293,7 +185,7 @@ export default {
     },
   },
   methods: {
-    initFormData(){
+    initFormData() {
       this.formModel = {
         consultationpurpose: "",
         applydoctor: "",
@@ -304,9 +196,9 @@ export default {
         staging_method: "",
         clsconsultationdetaillist: [], //会诊对象集
         filelist: [], //上传文件列表
-        applydate:null,
+        applydate: null,
         pat_status: -1,
-      }
+      };
     },
     loadData() {
       if (this.initData.primaryKey !== 0) {
@@ -439,7 +331,7 @@ export default {
         this.$message.info("handlerPrint");
       }, 3000);
     },
-    
+
     handleClose(removedTag) {
       const tags = this.tags.filter((tag) => tag !== removedTag);
       console.log(tags);

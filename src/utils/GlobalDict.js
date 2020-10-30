@@ -28,7 +28,7 @@ class dictHelper {
                 "dict_sort": 0,
                 "dict_status": 1
             }
-            let tmpList = http.Post(api.Common.GetWidgetDictRecursion, postParams) //GetWidgetDict
+            let tmpList = http.Post(api.Common.GetWidgetDict, postParams) //
             console.log('this.LoadDict = function ('+this.dictCategory+') { => tmpList=',tmpList)
             tmpList = tmpList.map(item=>{
                 return {

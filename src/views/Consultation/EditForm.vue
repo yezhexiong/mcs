@@ -127,7 +127,7 @@
           >
             <span>常用目的:</span>
               <span
-                v-for="item in $GlobalDict.Consultation.ConsultationPurpose.GetDict()" :key="item.message"
+                v-for="item in dict_ConsultationPurpose" :key="item.message"
               >
                 <a-button type="link" @click="selectCommonTarget(item.label)"
                   >{{ item.label }}
@@ -242,7 +242,7 @@
                   :label-col="labelCol2"
                 >
                   <a-select
-                    :options="$GlobalDict.TumorStaging.StagingMethod.GetDict()"
+                    :options="dict_StagingMethod"
                     v-model="formModel.staging_method"
                     placeholder="请选分期方法"
                   />
@@ -267,7 +267,7 @@
                 <a-form-model-item label="原发肿瘤" :label-col="labelCol2">
                   <a-select
                     v-model="formModel.primary_tumor"
-                    :options="$GlobalDict.TumorStaging.PrimaryTumor.GetDict()"
+                    :options="dict_TumorStaging"
                     placeholder="请选原发肿瘤"
                   />
                 </a-form-model-item>
@@ -276,7 +276,7 @@
                 <a-form-model-item label="淋巴结转移" :label-col="labelCol2">
                   <a-select
                     v-model="formModel.lymph_metastasis"
-                    :options="$GlobalDict.TumorStaging.LymphMetastasis.GetDict()"
+                    :options="dict_LymphMetastasis"
                     placeholder="请选择淋巴结转移"
                   />
                 </a-form-model-item>
@@ -287,7 +287,7 @@
                 <a-form-model-item label="远处转移" :label-col="labelCol2">
                   <a-select
                     v-model="formModel.distant_metastasis"
-                    :options="$GlobalDict.TumorStaging.DistantMetastasis.GetDict()"
+                    :options="dict_DistantMetastasis"
                     placeholder="请选择远处转移"
                   />
                 </a-form-model-item>
@@ -296,7 +296,7 @@
                 <a-form-model-item label="分期" :label-col="labelCol2">
                   <a-select
                     v-model="formModel.by_stages"
-                    :options="$GlobalDict.TumorStaging.ByStages.GetDict()"
+                    :options="dict_ByStages"
                     placeholder="请选择分期"
                   />
                 </a-form-model-item>
@@ -442,8 +442,20 @@ export default {
       wrapperCol: { span: 14 },
 
       formModel: {},
-      dict_ClassificationStages :this.$GlobalDict.TumorStaging.ClassificationStages.GetDict(),
+      // dict_ClassificationStages:this.$GlobalDict.TumorStaging.ClassificationStages.GetDict(),
+      // dict_StagingMethod:this.$GlobalDict.TumorStaging.StagingMethod.GetDict(),
+      // dict_TumorStaging:this.$GlobalDict.TumorStaging.PrimaryTumor.GetDict(),
+      // dict_LymphMetastasis:this.$GlobalDict.TumorStaging.LymphMetastasis.GetDict(),
+      // dict_DistantMetastasis:this.$GlobalDict.TumorStaging.DistantMetastasis.GetDict(),
+      // dict_ByStages:this.$GlobalDict.TumorStaging.ByStages.GetDict(),
+      dict_ClassificationStages:[],
+      dict_StagingMethod:[],
+      dict_TumorStaging:[],
+      dict_LymphMetastasis:[],
+      dict_DistantMetastasis:[],
+      dict_ByStages:[],
       dataSourceDefinitediagnosis: [], //会诊诊断数据源
+      dict_ConsultationPurpose:[],
 
       rules: {
         applydate: [
@@ -470,6 +482,15 @@ export default {
       selectExaminationVisible: false, //检验选择对话框显示
       selectDoctorsVisible: false, //会诊对象选择对话框显示
     };
+  },
+  created(){
+    this.dict_ClassificationStages =this.$GlobalDict.TumorStaging.ClassificationStages.GetDict()
+    this.dict_StagingMethod=this.$GlobalDict.TumorStaging.StagingMethod.GetDict()
+    this.dict_TumorStaging=this.$GlobalDict.TumorStaging.PrimaryTumor.GetDict()
+    this.dict_LymphMetastasis=this.$GlobalDict.TumorStaging.LymphMetastasis.GetDict()
+    this.dict_DistantMetastasis=this.$GlobalDict.TumorStaging.DistantMetastasis.GetDict()
+    this.dict_ByStages=this.$GlobalDict.TumorStaging.ByStages.GetDict()
+    this.dict_ConsultationPurpose=this.$GlobalDict.Consultation.ConsultationPurpose.GetDict()
   },
   mounted() {
     //mounted 是生命周期方法之一，会在对应生命周期时执行。
