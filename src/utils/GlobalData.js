@@ -172,4 +172,59 @@ export default {
             data: tmpList.slice(start, end)
         }
     },
+
+    _experts: [],
+    /**
+     * 获取所有专家组(异步)
+     */
+    async GetExperts() {
+        if (typeof (this._experts) == 'undefined' || this._experts.length === 0) {
+            this._experts = storage.get(CACHE_GLOBAL_PREFIX + 'Experts')
+        }
+        if (typeof (this._experts) == 'undefined' || this._experts.length === 0) {
+            let url = api.Common.GetExpertList;
+            let res = await http.AsyncGet(url);
+            let list = res.data;
+            if (typeof (list) == "undefined") {
+                this.$message.error('未找到任专家组，请联系管理员')
+                return []
+            }
+            storage.set(CACHE_GLOBAL_PREFIX + 'Experts', list, 7 * 24 * 60 * 60 * 1000)
+            this._experts = list;
+        }
+        return this._experts
+    },
+    /**
+     * 获取所有专家组(分页)
+     * @param {pagination} pagination 
+     */
+    async GetExpertsInPage(pagination={pageSize: 15,current:1,total:0}, searchKey='') {
+        let list = await this.GetExperts()
+        let tmpList = []
+        if(searchKey === ''){
+            tmpList = list
+        }else{
+            tmpList = list.filter((item) => {//模糊搜索
+                if (item.itemname.indexOf(searchKey) > -1 || item.inputcode.indexOf(searchKey) > -1) {
+                    return true;
+                }
+            });
+        }
+        if(tmpList.length === 0){
+            return {
+                total: 0,
+                data: []
+            }
+        }
+        let start = (pagination.current - 1) * pagination.pageSize
+        let end = start + pagination.pageSize
+        if(end>tmpList.length) {end =tmpList.length}
+        console.log('start=',start)
+        console.log('end=',end)
+        return {
+            total: tmpList.length,
+            data: tmpList.slice(start, end)
+        }
+    },
+    
 }

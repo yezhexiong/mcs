@@ -421,11 +421,9 @@ extensionFunc.Array = {
         return -1;
     },
     /**
-     *  方法:Array.removeValue(val)
-     *  功能:根据元素值删除数组元素.
-     *  参数:元素值
-     *  返回:在原数组上修改数组
-     * @param {*} val 
+     * 根据元素值删除数组元素
+     * @param {*} arr 数据集
+     * @param {*} val 元素值
      */
     removeValue: function (arr,val) {
         var index = arr.indexOfValue(val);

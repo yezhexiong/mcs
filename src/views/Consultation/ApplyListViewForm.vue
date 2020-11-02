@@ -7,32 +7,13 @@
   <div>
     <a-modal
       :visible="visible"
-      :title="title"
+      :title="title+'['+formModel.pat_status+']'"
       centered
-      width="900px"
+      width="1000px"
       @cancel="handlerCancel"
     >
       <!-- 对话框自定义按钮 -->
       <template slot="footer">
-        <!-- pat_status 流程状态 99:所有，10：取消会诊，11：驳回申请，0：退回，1:激活，2：完成，3：终止,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收) -->
-        <span v-if="formModel.pat_status === 15 || formModel.pat_status === -1">
-          <a-button
-            key="btnSend"
-            type="primary"
-            :loading="btnSendLoading"
-            @click="handlerSend"
-            >发送(直接)</a-button
-          >
-        </span>
-        <span v-if="formModel.pat_status === 15">
-          <a-button
-            key="btnDraftApply"
-            type="primary"
-            :loading="btnDraftApplyLoading"
-            @click="handlerDraftApply"
-            >发送(从草稿)</a-button
-          >
-        </span>
         <span v-if="formModel.pat_status === 11">
           <a-button
             key="btnReSend"
@@ -40,15 +21,6 @@
             :loading="btnReSendLoading"
             @click="handlerReSend"
             >重新发起</a-button
-          >
-        </span>
-        <span v-if="formModel.pat_status === 15 || formModel.pat_status === -1">
-          <a-button
-            key="btnSave"
-            type="primary"
-            :loading="btnSaveLoading"
-            @click="handlerSave"
-            >暂存</a-button
           >
         </span>
         <span v-if="formModel.pat_status === 13">
@@ -59,7 +31,7 @@
             @click="handlerWithdraw"
             >撤销申请</a-button
           >
-        </span>
+        </span> 
         <span v-if="formModel.pat_status === 15">
           <a-button
             key="btnDelete"
@@ -69,51 +41,113 @@
             >删除</a-button
           >
         </span>
-        <span v-if="formModel.pat_status === 16 || formModel.pat_status === 14">
+       
+        <span v-if="formModel.pat_status === 13 || formModel.pat_status === 2 || formModel.pat_status === 16">
           <a-button key="btnPrint" @click="handlerPrint">打印</a-button>
         </span>
         <a-button key="btnClose" @click="handlerCancel">关闭</a-button>
       </template>
-      <a-spin tip="Loading..." :spinning="formSpinning">
-          <a-descriptions title="User Info">
-            <a-descriptions-item label="会诊状态">
-              $GlobalDict.Consultation.ApprovalStatus.FormatDict(
-                formModel.pat_status
-              )
-            </a-descriptions-item>
-            <a-descriptions-item label="会诊患者">
-               姓名:{{ formModel.name }} 编号:{{ formModel.patientid }} 就诊号:{{
-              formModel.visitid
-            }}
-            </a-descriptions-item>
-            <a-descriptions-item label="会诊类型">
-              {{formModel.consultationattr}}
-            </a-descriptions-item>
-            <a-descriptions-item label="会诊时间">{{formModel.applydate}}</a-descriptions-item>
-            <a-descriptions-item label="会诊目的"> {{formModel.consultationpurpose}}</a-descriptions-item>
-            <a-descriptions-item label="会诊诊断"> {{formModel.definitediagnosis}}</a-descriptions-item>
-            <a-descriptions-item label="患者病情">{{formModel.memo}}</a-descriptions-item>
-            <a-descriptions-item label="补充患者资料"></a-descriptions-item>
-            <div v-if="formModel.consultationattr === '3'">
-            <a-divider orientation="left">肿瘤分期</a-divider>
-            <a-descriptions-item label="分期方法">{{formModel.staging_method}}</a-descriptions-item>
-            <a-descriptions-item label="类别"> {{formModel.classification_stages}}</a-descriptions-item>
-            <a-descriptions-item label="原发肿瘤">{{formModel.primary_tumor}}</a-descriptions-item>
-            <a-descriptions-item label="淋巴结转移">{{formModel.lymph_metastasis}}</a-descriptions-item>
-            <a-descriptions-item label="远处转移">{{formModel.distant_metastasis}}</a-descriptions-item>
-            <a-descriptions-item label="分期">{{formModel.by_stages}}</a-descriptions-item>
-            <a-divider />
-            </div>
-            <a-descriptions-item label="会诊对象">{{selectedDoctorsKeys}}</a-descriptions-item>
-            <a-descriptions-item label="申请医生"> {{formModel.applydoctor}}</a-descriptions-item>
-            <a-descriptions-item label="联系方式">{{formModel.phone}}</a-descriptions-item>
-          </a-descriptions>
-      </a-spin>
+      <div>
+        <a-row type="flex" justify="center" align="top">
+          <a-col :span="13">
+            <a-spin tip="Loading..." :spinning="formSpinning">
+              <a-steps :current="1" size="small">
+                <a-step title="会诊申请" />
+                <a-step title="会诊审核" />
+                <a-step title="接收会诊" />
+                <a-step title="编辑会诊意见" />
+                <a-step title="完成会诊" />
+              </a-steps>
+              <br />
+              <a-descriptions title="患者信息" :column="1">
+                <a-descriptions-item label="会诊患者">
+                  {{ formModel.name }} | {{ formModel.patientid }} |
+                  {{ formModel.visitid }}
+                </a-descriptions-item>
+                <a-descriptions-item label="患者病情">{{
+                  formModel.memo
+                }}</a-descriptions-item>
+                <a-descriptions-item label="补充患者资料"
+                  >1111</a-descriptions-item
+                >
+              </a-descriptions>
+              <a-descriptions title="会诊信息">
+                <a-descriptions-item label="会诊类型">
+                  {{ formModel.consultationattr }}
+                </a-descriptions-item>
+                <a-descriptions-item label="会诊时间">
+                  {{ formModel.applydate }}
+                </a-descriptions-item>
+                <a-descriptions-item label="会诊状态">
+                  {{
+                    $GlobalDict.Consultation.ApprovalStatus.FormatDict(
+                      formModel.pat_status
+                    )
+                  }}
+                </a-descriptions-item>
+                <a-descriptions-item label="会诊诊断" :span="3">
+                  {{ formModel.definitediagnosis }}</a-descriptions-item
+                >
+                <a-descriptions-item label="会诊目的" :span="3">
+                  {{ formModel.consultationpurpose }}</a-descriptions-item
+                >
+                <a-descriptions-item label="会诊对象" :span="3">
+                  <span
+                    v-for="item in formModel.clsconsultationdetaillist"
+                    :key="item.key"
+                  >
+                    <a-tag :key="item.key" @close="() => handleClose(item.key)">
+                      {{ item.groupname + "(" + item.consultationdept + ")" }}
+                    </a-tag>
+                  </span>
+                </a-descriptions-item>
+                <a-descriptions-item label="申请医生">
+                  {{ formModel.applydoctor }}</a-descriptions-item
+                >
+                <a-descriptions-item label="联系方式">{{
+                  formModel.phone
+                }}</a-descriptions-item>
+              </a-descriptions>
+              <div v-if="formModel.consultationattr === '3'">
+                <a-descriptions title="肿瘤分期" :column="3">
+                  <a-descriptions-item label="分期方法">{{
+                    formModel.staging_method
+                  }}</a-descriptions-item>
+                  <a-descriptions-item label="类别">
+                    {{ formModel.classification_stages }}</a-descriptions-item
+                  >
+                  <a-descriptions-item label="原发肿瘤">{{
+                    formModel.primary_tumor
+                  }}</a-descriptions-item>
+                  <a-descriptions-item label="淋巴结转移">{{
+                    formModel.lymph_metastasis
+                  }}</a-descriptions-item>
+                  <a-descriptions-item label="远处转移">{{
+                    formModel.distant_metastasis
+                  }}</a-descriptions-item>
+                  <a-descriptions-item label="分期">{{
+                    formModel.by_stages
+                  }}</a-descriptions-item>
+                </a-descriptions>
+              </div>
+            </a-spin>
+          </a-col>
+          <a-col :span="11">
+            <view-form-comment
+              :folio="initData.primaryKey"
+            />
+          </a-col>
+        </a-row>
+      </div>
     </a-modal>
   </div>
 </template>
 <script>
+import viewFormComment from '@/views/Consultation/ViewFormComment'
 export default {
+  components: {
+    viewFormComment,
+  },
   props: {
     //组件入参数定义,入参数参数不允许修改 定义props参数后调用，父组件传值方式 :title="xxxx" 或 title="xxxx"
     visible: Boolean, //a-modal 是否显示
@@ -142,8 +176,8 @@ export default {
       btnSaveLoading: false,
       btnSendLoading: false,
       btnDraftApplyLoading: false,
-      btnReSendLoading: false,
       btnWithdrawLoading: false,
+      btnReSendLoading: false,
       btnDeleteLoading: false,
       formSpinning: false, //表单加载状态
 
@@ -167,7 +201,7 @@ export default {
       ) {
         this.formModel.clsconsultationdetaillist.forEach((item) => {
           list.push({
-            key: item.consuldoctorname,
+            key: item.consultationdept,
           });
         });
       }
@@ -181,7 +215,7 @@ export default {
         this.loadData();
       },
       deep: true, //监听对象时，需要开启
-      immediate: true, //启动首次监听
+      // immediate: true, //启动首次监听
     },
   },
   methods: {
@@ -203,11 +237,7 @@ export default {
     loadData() {
       if (this.initData.primaryKey !== 0) {
         this.formSpinning = true;
-        let url =
-          this.$Api.Consultation.ApplyInfo +
-          "?folio=" +
-          this.initData.primaryKey;
-        console.log("url=", url);
+        let url = this.$Api.Consultation.ApplyInfo +"?folio=" +this.initData.primaryKey;
         this.$Http.AsyncPost(url).then((res) => {
           this.formModel = res.data;
           this.formSpinning = false;
@@ -216,51 +246,6 @@ export default {
     },
     handlerCancel() {
       this.$emit("update:visible", false); //父组件里通过.sync的props变量，才能通过次方式进行修改 这里是:visible.sync
-    },
-    handlerSave() {
-      this.$refs.editForm.validate((valid) => {
-        if (valid) {
-          //验证成功
-          this.btnSaveLoading = true;
-          this.formModel.pat_status = 2;
-          let param = {
-            hdconsultation: this.formModel,
-            fileList: [],
-          };
-          this.$Http
-            .AsyncPost(this.$Api.Consultation.AddApply, param)
-            .then((res) => {
-              this.btnSaveLoading = false;
-              this.$message.info("发送成功");
-              this.$emit("update:visible", false); //关闭对话框
-              console.log(res);
-            });
-        } else {
-          console.log("error handlerSave!!");
-          return false;
-        }
-      });
-    },
-    handlerDraftApply() {
-      //草稿提交
-      this.$refs.editForm.validate((valid) => {
-        //验证成功
-        if (valid) {
-          this.formModel.patsource = "3"; //1门诊、3住院、4体检、2急诊、9其他
-          this.btnDraftApplyLoading = true;
-          this.$Http
-            .AsyncPost(this.$Api.Consultation.DraftApply, this.formModel)
-            .then((res) => {
-              this.btnDraftApplyLoading = false;
-              this.$message.info("发送成功（从草稿状态)");
-              this.$emit("update:visible", false);
-              console.log(res);
-            });
-        } else {
-          console.log("error onDraftApply!!");
-          return false;
-        }
-      });
     },
     handlerDelete() {
       this.$refs.editForm.validate((valid) => {
@@ -282,6 +267,7 @@ export default {
         }
       });
     },
+   
     handlerWithdraw() {
       this.$refs.editForm.validate((valid) => {
         if (valid) {

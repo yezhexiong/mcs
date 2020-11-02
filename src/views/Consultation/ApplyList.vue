@@ -13,12 +13,16 @@
     @change="handleTableChange"
     rowKey="consulno"
     >
+    
     <template slot="receivenumInfo" slot-scope="text, record">
        {{ record.receivenum+'/'+record.receiveall }}
     </template>
+    <template slot="patStatus" slot-scope="text, record">
+       {{ $GlobalDict.Consultation.ApprovalStatus.FormatDict(record.pat_status) }}
+    </template>
     <span slot="action" slot-scope="text, record">
       <template>
-        <a @click="openEditForm({primaryKey:record.consulno})">详细</a>
+        <a @click="openForm({primaryKey:record.consulno,pat_status:record.pat_status})">详细</a>
       </template>
     </span>
   </a-table>
@@ -29,16 +33,16 @@
     :visible.sync="editFormVisible"
     :init-data="formInitData"
   />
-  <!-- <view-form
+  <view-form
     ref="viewForm"
     :visible.sync="viewFormVisible"
     :init-data="formInitData"
-  />   -->
+  />  
 </div>
 </template>
 <script>
-import editForm from '@/views/Consultation/EditForm'
-// import viewForm from '@/views/Consultation/ViewForm'
+import editForm from '@/views/Consultation/ApplyListEditForm'
+import viewForm from '@/views/Consultation/ApplyListViewForm'
 
 const columns = [
   { title: '床号', width: 60, dataIndex: 'bedlabel', key: 'bedlabel', fixed: 'left' },
@@ -51,7 +55,7 @@ const columns = [
   { title: '会诊目的', dataIndex: 'consultationpurpose', key: 'consultationpurpose', ellipsis: true},
   { title: '申请会诊时间', dataIndex: 'applydate', key: 'applydate',ellipsis: true, width:'200px'},
   { title: '会诊接收情况', key: 'receivenumInfo' ,scopedSlots: { customRender: 'receivenumInfo' },},
-  { title: '会诊状态', dataIndex: 'pat_status', key: 'pat_status' },//,scopedSlots: { customRender: 'patStatus' },
+  { title: '会诊状态',  key: 'pat_status',scopedSlots: { customRender: 'patStatus' },},
   {
     title: '操作',
     key: 'operation',
@@ -67,7 +71,7 @@ const data = [];
 export default {
   components: {
     editForm,
-    // viewForm,
+    viewForm,
   },
   props: {//组件入参数定义,入参数参数不允许修改 定义props参数后调用，调用时就可以这样使用 :title="xxxx" 或 title="xxxx"
     queryParam: {},// 查询参数
@@ -80,7 +84,7 @@ export default {
       pagination:{hideOnSinglePage:true,pageSize:10000},//hideOnSinglePage 只有页则不显示分页控件
       loading: true,
       editFormVisible: false,
-      // viewFormVisible:false,
+      viewFormVisible:false,
       formInitData:{},
     };
   },
@@ -134,22 +138,20 @@ export default {
           // pagination.total = data.totalCount;
           pagination.total = 1;
           this.loading = false;
-          for(let index in res.data){
-            let entity = res.data[index]
-            entity.pat_status = this.$GlobalDict.Consultation.ApprovalStatus.FormatDict(entity.pat_status)
-          }
-          
           this.data = res.data;
           this.pagination = pagination;
       });
     },
     /**  */
-    openEditForm(obj={}) {
-      this.editFormVisible = true;
-      // this.viewFormVisible = true;
+    openForm(obj={}) {
       this.formInitData=obj;
+      console.log('openForm => this.formInitData =',this.formInitData)
+      if(this.formInitData.isCreat || this.formInitData.pat_status===2 || this.formInitData.pat_status===11){
+        this.editFormVisible = true;
+      }else{
+        this.viewFormVisible = true;
+      }
     },
-    
   },
 };
 </script>

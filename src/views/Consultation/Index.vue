@@ -4,7 +4,7 @@
       <a-tab-pane key="apply-list" tab="发起会诊">
         <apply-list :queryParam="applyQueryParam" ref="apply_table"></apply-list>
       </a-tab-pane>
-      <a-tab-pane key="approval-list" tab="审核会诊">
+      <a-tab-pane key="approval-list" tab="应邀会诊">
         <approval-list :queryParam="approvalQueryParam" ref="approval_list"></approval-list>
       </a-tab-pane>
       <!-- <a-tab-pane key="draft-list" tab="我的草稿">
@@ -33,18 +33,17 @@
             </a-form-model-item>
             <a-form-model-item label="状态">
               <a-select default-value="99" :style="{width:'100px'}" placeholder="请选择" v-model="applyQueryParam.approvalstatus">
-                <!-- 流程状态 99:所有，10：取消会诊，11：驳回申请，0：退回，1:激活，2：完成，3：终止,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收) -->
                 <a-select-option value="99">全部</a-select-option>
                 <a-select-option value="2">暂存</a-select-option>
                 <a-select-option value="16">会诊中</a-select-option>
                 <a-select-option value="14">审核通过</a-select-option>
                 <a-select-option value="15">已完成</a-select-option>
                 <a-select-option value="10">作废</a-select-option>
-                <a-select-option value="11">审核驳回</a-select-option>
+                <a-select-option value="11">驳回申请</a-select-option>
               </a-select>
             </a-form-model-item>
             <a-form-model-item>
-                <a-button type="primary" icon="plus" style="margin-left: 8px" @click="openEditForm">新建(测试入口)</a-button>
+                <a-button type="primary" icon="plus" style="margin-left: 8px" @click="openForm">新建(测试入口)</a-button>
             </a-form-model-item>
           </div>
           <div v-if="curlTab==='approval-list'">
@@ -68,7 +67,6 @@
             </a-form-model-item>
             <a-form-model-item label="状态">
               <a-select default-value="99" :style="{width:'100px'}" placeholder="请选择" v-model="approvalQueryParam.approvalstatus">
-                <!-- 流程状态 99:所有，10：取消会诊，11：驳回申请，0：退回，1:激活，2：完成，3：终止,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收) -->
                 <a-select-option value="99">全部</a-select-option>
                 <a-select-option value="2">暂存</a-select-option>
                 <a-select-option value="16">会诊中</a-select-option>
@@ -116,7 +114,7 @@ export default {
         
       }
     },
-    openEditForm(){
+    openForm(){
       // let param = {
       //   "strpatientid": "string",
       //   "strwardcode": "string",
@@ -125,8 +123,8 @@ export default {
       //   "strdeptcode": "string"
       // }
       let param = {
-        "strpatientid": "T620020527",
-        "strvisitid": "2060358",
+        "strpatientid": "T620024547",
+        "strvisitid": "2059793",
       }
       this.$Http.AsyncPost(this.$Api.Patient.GetInPatBasicInfo,param).then(res => {
         let formInitData = {
@@ -137,8 +135,8 @@ export default {
           patientDiagnosis:res.data.diagnosis,//患者主诊断
           // applydoctor:this.$GlobalData.LoginUserInfo.username,
         }
-        console.log('formInitData=',formInitData)
-        this.$refs.apply_table.openEditForm(formInitData)
+        console.log('openForm => formInitData=',formInitData)
+        this.$refs.apply_table.openForm(formInitData)
       })
     },
     // function(dates: [moment, moment] | [string, string], dateStrings: [string, string])
@@ -151,7 +149,7 @@ export default {
     return {
       applyQueryParam: {// 发起会诊查询参数
         "applyDateRegion":[this.$GlobalFunc.moment().subtract(1, 'weeks'),this.$GlobalFunc.moment().endOf('day')],//此字段接口不需要，是控件需要，接口所需参数是starttime,endtime，在后面处理        
-        "approvalstatus":"99",//流程状态 99:所有，10：取消会诊，11：驳回申请，0：退回，1:激活，2：完成，3：终止,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收)
+        "approvalstatus":"99",
         "approvaltype":"99",//会诊范围99:所有1=本人发起，2=本科室发起
         "consultationtype":"99",//会诊类型99:所有 1=急，2=普通会诊，3=MDT会诊
         "apprrovaldept":"2022",//课室
@@ -161,7 +159,7 @@ export default {
       approvalQueryParam: {// 审核会诊查询参数
         "applyDateRegion":[this.$GlobalFunc.moment().subtract(1, 'weeks'),this.$GlobalFunc.moment().endOf('day')],//此字段接口不需要，是控件需要，接口所需参数是starttime,endtime，在后面处理        
         "consultationtype":"99",//会诊类型99:所有 1=急，2=普通会诊，3=MDT会诊
-        "approvalstatus":"99",//流程状态 99:所有，10：取消会诊，11：驳回申请，0：退回，1:激活，2：完成，3：终止,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收)
+        "approvalstatus":"99",
         "apprrovaldept":"2022",//课室 
         "approvaltype":"99",//会诊范围99:所有1=本人发起，2=本科室发起
         "apprrovaluser":this.$GlobalData.LoginUserInfo.dbuser,//审批用户
@@ -179,14 +177,16 @@ export default {
 }
 </script>
 <style>
+
+#index_tabs{background: #fff;}
 #index_tabs .ant-tabs-bar {
-    background: #DFF4FA;
-    margin:0;
-    overflow: hidden;    
+  background: #DFF4FA;
+  margin:0;
+  overflow: hidden;    
 }
 
 #index_tabs .ant-tabs-ink-bar {
-    height: 3px;
-    background-color: #08979C;
+  height: 3px;
+  background-color: #08979C;
 }
 </style>

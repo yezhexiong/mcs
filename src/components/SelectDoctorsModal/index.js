@@ -2,7 +2,9 @@
 组件名称:选择会诊对象
 作者：yezhexiong
 API 
- visible.sync 窗体是否显示
+  visible.sync 窗体是否显示
+  ConsultationType:String,//会诊类型 2=普通-平会诊 1=普通-急会诊 3=MDT会诊
+
 事件 
  confirmImport 确认导入回调事件
 

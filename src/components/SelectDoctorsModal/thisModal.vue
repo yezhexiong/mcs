@@ -31,9 +31,7 @@
       ok-text="确认导入"
       @ok="confirmImport"
     >
-    <this-content 
-      ref="selectDoctorsContent"
-    />
+      <this-content ref="selectDoctorsContent" v-bind="$attrs"/>
     </a-modal>
   </div>
 </template>
@@ -53,6 +51,7 @@ export default {
     },
   methods: {
     closeModal() {//关闭对话框
+      this.$refs.selectDoctorsContent.clearData();
       this.$emit('update:visible',false); //父组件里通过.sync的props变量，才能通过次方式进行修改 这里是:visible.sync
     },
     confirmImport() {//确认导入

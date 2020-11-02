@@ -126,7 +126,7 @@
           <a-breadcrumb-item>List</a-breadcrumb-item>height: fullHeight +'px',
           <a-breadcrumb-item>App</a-breadcrumb-item>
         </a-breadcrumb> -->
-        <a-layout-content style="background:#fff">
+        <a-layout-content>
           <router-view>
           </router-view>
         </a-layout-content>

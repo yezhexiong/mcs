@@ -7,22 +7,22 @@
   <div>
     <a-modal
       :visible="visible"
-      :title="title"
+      :title="title+'['+formModel.pat_status+']'"
       centered
       width="900px"
       @cancel="handlerCancel"
     >
       <!-- 对话框自定义按钮 -->
       <template slot="footer">
-        <!-- pat_status 流程状态 99:所有，10：取消会诊，11：驳回申请，0：退回，1:激活，2：完成，3：终止,13:申请中，14：审核通过，15：完成会诊，16：会诊中(已接收) -->
         <span v-if="formModel.pat_status === 15 || formModel.pat_status === -1">
           <a-button
             key="btnSend"
             type="primary"
             :loading="btnSendLoading"
             @click="handlerSend"
-            >发送(直接)</a-button
-          >
+            >
+            发送(直接)
+          </a-button>
         </span>
         <span v-if="formModel.pat_status === 2">
           <a-button
@@ -30,46 +30,37 @@
             type="primary"
             :loading="btnDraftApplyLoading"
             @click="handlerDraftApply"
-            >发送(从草稿)</a-button
-          >
+            >
+            发送(从草稿)
+            </a-button>
         </span>
         <span v-if="formModel.pat_status === 11">
           <a-button
             key="btnReSend"
             type="primary"
             :loading="btnReSendLoading"
-            @click="handlerReSend"
-            >重新发起</a-button
-          >
+            @click="handlerReSend">
+            重新发起
+          </a-button>
         </span>
-        <span v-if="formModel.pat_status === 15 || formModel.pat_status === -1">
+        <span v-if="formModel.pat_status === 15 || formModel.pat_status === -1 || formModel.pat_status === 2">
           <a-button
             key="btnSave"
             type="primary"
             :loading="btnSaveLoading"
-            @click="handlerSave"
-            >暂存</a-button
-          >
+            @click="handlerSave">保存
+          </a-button>
         </span>
-        <span v-if="formModel.pat_status === 13">
-          <a-button
-            key="btnWithdraw"
-            type="primary"
-            :loading="btnWithdrawLoading"
-            @click="handlerWithdraw"
-            >撤销申请</a-button
-          >
-        </span>
-        <span v-if="formModel.pat_status === 15">
+        <span v-if="formModel.pat_status === 15 || formModel.pat_status === 2">
           <a-button
             key="btnDelete"
             type="primary"
             :loading="btnDeleteLoading"
-            @click="handlerDelete"
-            >删除</a-button
-          >
+            @click="handlerDelete">
+            删除
+            </a-button>
         </span>
-        <span v-if="formModel.pat_status === 16 || formModel.pat_status === 14">
+        <span v-if="formModel.pat_status === 13 || formModel.pat_status === 2 || formModel.pat_status === 16">
           <a-button key="btnPrint" @click="handlerPrint">打印</a-button>
         </span>
         <a-button key="btnClose" @click="handlerCancel">关闭</a-button>
@@ -89,8 +80,7 @@
           :label-col="labelCol"
           :wrapper-col="wrapperCol"
         >
-          a:{{ formModel.pat_status }}
-          <div class="my_status_flag">
+          <div v-if="formModel.pat_status!=-1" class="my_status_flag">
             {{
               $GlobalDict.Consultation.ApprovalStatus.FormatDict(
                 formModel.pat_status
@@ -126,22 +116,14 @@
             :autoLink="false"
           >
             <span>常用目的:</span>
-              <span
-                v-for="item in dict_ConsultationPurpose" :key="item.message"
-              >
-                <a-button type="link" @click="selectCommonTarget(item.label)"
-                  >{{ item.label }}
-                </a-button>
+              <span v-for="item in dict_ConsultationPurpose" :key="item.message">
+                <a-button type="link" @click="importToPurpose(item.label)">{{ item.label }}</a-button>
               </span>
             <a-input
               v-model="formModel.consultationpurpose"
               type="textarea"
               placeholder="点击上诉常用选项 或 输入"
-              @blur="
-                () => {
-                  $refs.consultationpurpose.onFieldBlur();
-                }
-              "
+              @blur="() => {$refs.consultationpurpose.onFieldBlur();}"
             />
             <!--  
              Form.Item 会对唯一子元素进行劫持，并监听 blur 和 change 事件，来达到自动校验的目的，所以请确保表单域没有其它元素包裹。如果有多个子元素，将只会监听第一个子元素的变化。
@@ -175,47 +157,19 @@
           </a-form-model-item>
           <a-form-model-item
             label="患者病情"
-            prop="memo"
             ref="memo"
+            prop="memo"
             :autoLink="false"
           >
-            <a-button
-              type="link"
-              @click="
-                () => {
-                  $refs.memo.onFieldBlur();
-                }
-              "
-              >导入病情</a-button
-            >
-            <a-button
-              type="link"
-              @click="
-                () => {
-                  selectAssayVisible = true;
-                }
-              "
-              >导入检验</a-button
-            >
-            <a-button
-              type="link"
-              @click="
-                () => {
-                  selectExaminationVisible = true;
-                }
-              "
-              >导入检查</a-button
-            >
+            <a-button type="link" @click="importToMemo('\n会诊诊断：'+formModel.definitediagnosis+';\n')">导入病情</a-button>
+            <a-button type="link" @click="() => {selectAssayVisible = true}">导入检验</a-button>
+            <a-button type="link" @click="() => {selectExaminationVisible = true}">导入检查</a-button>
             <a-input
               v-model="formModel.memo"
               type="textarea"
               placeholder="请简单描述患者病情"
               style="height: 100px"
-              @blur="
-                () => {
-                  $refs.memo.onFieldBlur();
-                }
-              "
+              @blur="() => {$refs.memo.onFieldBlur();}"
             />
           </a-form-model-item>
           <a-form-model-item label="补充患者资料">
@@ -226,9 +180,7 @@
               @change="uploadFiles"
             >
               <p class="ant-upload-drag-icon">
-                <a-icon type="cloud-upload" /><span style="padding-left: 10px"
-                  >点击【上传】或拖动资料到此区域完成上传</span
-                >
+                <a-icon type="cloud-upload" /><span style="padding-left: 10px">点击【上传】或拖动资料到此区域完成上传</span>
               </p>
             </a-upload-dragger>
           </a-form-model-item>
@@ -319,7 +271,8 @@
                 @close="() => handleClose(item.key)"
                 color="#f50"
               >
-                {{ item.objName + "(" + item.consultationdept + ")" }}
+                {{ item.groupname + "(" + item.consultationdept + ")" }}
+                <!-- GROUPLEADER 1=组长,2=秘书 -->
               </a-tag>
               <!-- <a-tooltip
                 v-if="item.objName.length > 20"
@@ -383,21 +336,21 @@
     <select-assay-modal
       ref="selectAssayModal"
       :visible.sync="selectAssayVisible"
-      :patientId="formModel.patientid"
-      :patientName="formModel.name"
+      :patient-id="formModel.patientid"
+      :patient-name="formModel.name"
       @confirmImport="handlerConfirmImportAssay"
     />
     <select-examination-modal
       ref="selectExaminationModal"
       :visible.sync="selectExaminationVisible"
-      :patientId="formModel.patientid"
-      :patientName="formModel.name"
+      :patient-id="formModel.patientid"
+      :patient-name="formModel.name"
       @confirmImport="handlerConfirmImportExamination"
     />
     <select-doctors-modal
       ref="selectDoctorsModal"
       :visible.sync="selectDoctorsVisible"
-      :selectedKeys="selectedDoctorsKeys"
+      :consultation-type="formModel.consultationattr"
       @confirmImport="handlerConfirmImportDoctors"
     />
   </div>
@@ -407,8 +360,8 @@ export default {
   props: {
     //组件入参数定义,入参数参数不允许修改 定义props参数后调用，父组件传值方式 :title="xxxx" 或 title="xxxx"
     visible: Boolean, //a-modal 是否显示
+    //初始值
     initData: {
-      //初始值
       type: Object,
       default() {
         return {
@@ -418,6 +371,7 @@ export default {
           patientName: "", //患者姓名
           patientVisitId: "", //就诊主键
           patientDiagnosis: "", //患者主诊断
+          pat_status: -1, //会诊状态
         };
       },
     },
@@ -433,7 +387,6 @@ export default {
       btnSendLoading: false,
       btnDraftApplyLoading: false,
       btnReSendLoading: false,
-      btnWithdrawLoading: false,
       btnDeleteLoading: false,
       formSpinning: false, //表单加载状态
 
@@ -465,7 +418,7 @@ export default {
         definitediagnosis: [
           { required: true, message: "请选择会诊诊断", trigger: "blur" },
         ],
-        memo: [{ required: true, message: "请填写患者病情", trigger: "blur" }],
+        memo: [{ required: true, message: "请填写患者病情"}],
         applydoctor: [
           { required: true, message: "请填写申请医生", trigger: "blur" },
         ],
@@ -523,7 +476,7 @@ export default {
           //   pat_status: -1, //-1未创建默认值
           //   // consultationpurpose:'',//???不知道为什么，这里不初始化，点击常用会诊目的会卡死
           // };
-          console.log("this.formModel=", this.formModel);
+          console.log("watch => handler => this.formModel=", this.formModel);
         } else {
           this.title = "修改会诊申请单";
           console.log('run EditForm.loadData();')
@@ -549,27 +502,24 @@ export default {
         applydate: null,
         pat_status: -1,
       };
-      console.log("initFormData=>this.formModel:", this.formModel);
-      this.formModel.patientId = this.initData.patientId;
-      this.formModel.visitId = this.initData.patientVisitId;
-      this.formModel.patientName = this.initData.patientName;
-      this.formModel.diagnosis = this.initData.patientDiagnosis; //患者主诊断
+     
+      this.formModel.patientid = this.initData.patientId;
+      this.formModel.visitid = this.initData.patientVisitId;
+      this.formModel.name = this.initData.patientName;
+      this.formModel.definitediagnosis = this.initData.patientDiagnosis; //患者主诊断
       this.formModel.applydoctor = this.$GlobalData.LoginUserInfo.username;
       this.formModel.applydoctorCode = this.$GlobalData.LoginUserInfo.userid;
       this.formModel.applydeptcode = this.$GlobalData.LoginUserInfo.applydeptcode;
       this.formModel.hospitalcode = this.$GlobalData.LoginUserInfo.hospitalcode;
-      console.log("initFormData=>this.formModel2:", this.formModel);
     },
     loadData() {
       if (this.initData.primaryKey !== 0) {
         this.formSpinning = true;
-        let url =
-          this.$Api.Consultation.ApplyInfo +
-          "?folio=" +
-          this.initData.primaryKey;
+        let url =this.$Api.Consultation.ApplyInfo +"?folio=" +this.initData.primaryKey;
         this.$Http.AsyncPost(url).then((res) => {
           this.formModel = res.data;
           this.formSpinning = false;
+          console.log('run editform => loadData => this.formModel',this.formModel)
         });
       }
     },
@@ -613,8 +563,13 @@ export default {
     /** 直接发送 */
     handlerSend() {
       this.$refs.editForm.validate((valid) => {
+        //验证成功
         if (valid) {
-          //验证成功
+          console.log('this.formModel.clsconsultationdetaillist=',this.formModel.clsconsultationdetaillist)
+          if(this.formModel.clsconsultationdetaillist.length===0){
+              this.$message.error("请选中会诊对象");
+              return
+          }
           this.btnSendLoading = true;
           this.formModel.pat_status = 1;
           let param = {
@@ -679,26 +634,7 @@ export default {
         }
       });
     },
-    handlerWithdraw() {
-      this.$refs.editForm.validate((valid) => {
-        if (valid) {
-          //验证成功
-          this.btnWithdrawLoading = true;
-          this.formModel.pat_status = 2;
-          this.$Http
-            .AsyncPost(this.$Api.Consultation, this.formModel)
-            .then((res) => {
-              this.btnWithdrawLoading = false;
-              this.$message.info("发送成功");
-              this.$emit("update:visible", false); //关闭对话框
-              console.log(res);
-            });
-        } else {
-          console.log("error onSave!!");
-          return false;
-        }
-      });
-    },
+    
     handlerReSend() {
       this.$refs.editForm.validate((valid) => {
         if (valid) {
@@ -729,13 +665,21 @@ export default {
         this.$message.info("handlerPrint");
       }, 3000);
     },
-    selectCommonTarget(val) {
+    importToPurpose(val) {
       let tmpTxt = "";
       if (typeof this.formModel.consultationpurpose != "undefined") {
         tmpTxt = this.formModel.consultationpurpose;
       }
       tmpTxt += val + ";    ";
       this.formModel.consultationpurpose = tmpTxt;
+    },
+    importToMemo(val) {
+      let tmpTxt = "";
+      if (typeof this.formModel.memo != "undefined") {
+        tmpTxt = this.formModel.memo;
+      }
+      tmpTxt += val;
+      this.formModel.memo = tmpTxt;
     },
     uploadFiles(info) {
       const status = info.file.status;
@@ -749,7 +693,7 @@ export default {
       }
     },
     handleClose(removedTag) {
-      const tags = this.tags.filter((tag) => tag !== removedTag);
+      const tags = this.formModel.clsconsultationdetaillist.filter(tag => tag !== removedTag);
       console.log(tags);
       this.tags = tags;
     },
@@ -782,18 +726,19 @@ export default {
       // consultationdept:会诊医生所在部门，专家组和科室不用传
       // consultationdoctor:会诊对象id
       // consultationreceivedoctor:会诊对象id
-      // receivetype:会诊对象类型 1:科室 2:用户 3:专家组
+      // receive_type:会诊对象类型 1:科室 2:用户 3:专家组
       let objs = [];
       doctors.forEach((item) => {
         objs.push({
           key: item.key,
-          objName: item.value,
-          consultationdoctor: item.id,
-          consultationreceivedoctor: item.id,
+          groupname: item.value,
+          ConsulDoctorName:item.value,
+          ConsulDoctor: item.id,
+          consultation_receive_doctor: item.id,
           consultationdept: item.deptCode,
-          receivetype: item.type, //配音首字母
-          patientid: this.formModel.patientId,
-          visitid: this.formModel.visitId,
+          receive_type: item.type, //配音首字母
+          patientid: this.formModel.patientid,
+          visitid: this.formModel.visitid,
         });
       });
       console.log("clsconsultationdetaillist=", objs);
